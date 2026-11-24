@@ -1,0 +1,70 @@
+{
+ "_meta": {
+  "source": "SAMPLE DATA: illustrative placeholder prices, not real market data",
+  "replace_with": "run notebooks/02_data_pipeline.ipynb with LIVE = True"
+ },
+ "base1-4": {
+  "name": "Charizard",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 380.0
+  },
+  "source": "sample"
+ },
+ "base1-2": {
+  "name": "Blastoise",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 120.0
+  },
+  "source": "sample"
+ },
+ "base1-15": {
+  "name": "Venusaur",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 100.0
+  },
+  "source": "sample"
+ },
+ "base1-10": {
+  "name": "Mewtwo",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 40.0
+  },
+  "source": "sample"
+ },
+ "base1-16": {
+  "name": "Zapdos",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 45.0
+  },
+  "source": "sample"
+ },
+ "base1-58": {
+  "name": "Pikachu",
+  "set_name": "Base Set",
+  "variants": {
+   "normal": 9.0
+  },
+  "source": "sample"
+ },
+ "sv03.5-199": {
+  "name": "Charizard ex",
+  "set_name": "151",
+  "variants": {
+   "holofoil": 110.0
+  },
+  "source": "sample"
+ },
+ "swsh4-44": {
+  "name": "Pikachu VMAX",
+  "set_name": "Vivid Voltage",
+  "variants": {
+   "holofoil": 14.0
+  },
+  "source": "sample"
+ }
+}

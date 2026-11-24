@@ -14,3 +14,9 @@ __pycache__/
 # Raw scraped data (anonymized listings.json is tracked; raw snapshot is not)
 data/raw/*
 !data/raw/.gitkeep
+
+# macOS
+.DS_Store
+
+# Re-downloadable cache of the TCGdex set list
+data/tcgdex_sets.json
