@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets & local caches
+.env
+.cache/
+*.sqlite
+*.db
+
+# Raw scraped data (anonymized listings.json is tracked; raw snapshot is not)
+data/raw/*
+!data/raw/.gitkeep

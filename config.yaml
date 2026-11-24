@@ -1,0 +1,61 @@
+# Pinned model IDs, thresholds, and persona weights (Project Plan v2)
+# Never hardcode these values in Python modules.
+
+models:
+  primary: "gemini-3.8-flash"          # Billing enabled; primary agent LLM
+  primary_free_tier: "gemini-3.5-flash-lite"
+  small: "openai/gpt-oss-20b"          # Groq; Ablation 5
+  frontier: "gemini-3.1-pro"           # Paid; Ablation 6 (single pass)
+  judge: "openai/gpt-oss-120b"         # Groq; LLM-as-judge
+  stt: "whisper-large-v3-turbo"        # Groq STT
+  stt_fallback: "small.en"             # Local faster-whisper
+  tts: "edge-tts"                      # Primary neural TTS
+  temperature: 0.0
+
+pricing:
+  default_shipping_estimate: 5.00      # Used when shipping is unknown and not in-person
+  default_tax_rate: 0.0                # 0% default for in-person private sales
+
+thresholds:
+  risk_reject: 0.6                     # Hard scam gate: >= 0.6 is dropped before ranking
+  risk_warn: 0.3                       # 0.3 <= risk < 0.6 is kept with a spoken warning
+  extraction_confidence_review: 0.7    # Below 0.7 flagged for manual review
+  price_risk_high_ratio: 0.4           # < 40% of condition-adjusted market price -> r_price = 1.0
+  price_risk_med_ratio: 0.6            # 40%-60% of condition-adjusted market price -> r_price = 0.5
+  info_missing_penalty: 0.25           # Missing both card number and clear photo -> r_info = 0.25
+
+condition_price_multipliers:
+  NM: 1.00
+  LP: 0.85
+  MP: 0.70
+  HP: 0.50
+  DMG: 0.30
+  unknown: 0.85
+
+condition_utility_scores:
+  NM: 1.0
+  LP: 0.8
+  MP: 0.6
+  HP: 0.4
+  DMG: 0.2
+  unknown: 0.5
+
+personas:
+  budget_parent:
+    price: 0.70
+    condition: 0.15
+    trust: 0.15
+  serious_collector:
+    price: 0.20
+    condition: 0.60
+    trust: 0.20
+  cautious_buyer:
+    price: 0.25
+    condition: 0.25
+    trust: 0.50
+
+limits:
+  max_clarify_questions: 1
+  max_search_retries: 1
+  max_humanizer_retries: 1
+  tts_timeout_seconds: 3.0

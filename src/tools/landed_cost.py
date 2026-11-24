@@ -1,0 +1,49 @@
+"""Deterministic landed cost calculator (Section 5)."""
+
+from typing import Optional
+
+from src.schemas import DeliveryType, LandedCostResult
+
+
+def compute_landed_cost(
+    price: float,
+    shipping: Optional[float] = None,
+    delivery_type: DeliveryType = "unknown",
+    default_shipping_estimate: float = 5.0,
+    tax_rate: float = 0.0,
+) -> LandedCostResult:
+    """Compute total landed cost: total = price + shipping + tax.
+
+    Rules (Section 5):
+    - Shipping is $0 only for in-person pickup.
+    - When shipping is unknown (None) and not in-person, use default_shipping_estimate ($5)
+      and mark shipping_estimated=True so the reply discloses the estimate.
+    - Tax defaults to 0% for private local sales.
+    """
+    if price < 0:
+        raise ValueError("price must be non-negative")
+    if shipping is not None and shipping < 0:
+        raise ValueError("shipping must be non-negative")
+    if tax_rate < 0:
+        raise ValueError("tax_rate must be non-negative")
+
+    if delivery_type == "in_person":
+        shipping_used = 0.0
+        shipping_estimated = False
+    elif shipping is not None:
+        shipping_used = float(shipping)
+        shipping_estimated = False
+    else:
+        shipping_used = float(default_shipping_estimate)
+        shipping_estimated = True
+
+    tax = round(price * tax_rate, 2)
+    total = round(price + shipping_used + tax, 2)
+
+    return LandedCostResult(
+        price=round(float(price), 2),
+        shipping=round(shipping_used, 2),
+        tax=tax,
+        total=total,
+        shipping_estimated=shipping_estimated,
+    )

@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Text chat",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/cli_text.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Voice chat",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/cli_voice.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Run ablations",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "eval.run_ablation",
+      "args": ["--all", "--repeats", "3"],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

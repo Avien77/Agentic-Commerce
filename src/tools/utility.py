@@ -1,0 +1,74 @@
+"""Deterministic persona-weighted utility scoring and ranking (Section 5)."""
+
+from typing import Any, Optional
+
+from src.config import load_config
+from src.schemas import Condition, EvaluatedListing, Persona
+
+
+def compute_utility(
+    total: float,
+    budget: float,
+    condition: Condition,
+    risk: float,
+    persona: Persona,
+    config: Optional[dict[str, Any]] = None,
+) -> float:
+    """Compute U = w1 * P + w2 * C + w3 * T.
+
+    - P = 1 - (total / budget), clipped to [0, 1]
+    - C = condition score from config (NM 1.0, LP 0.8, MP 0.6, HP 0.4, DMG 0.2, unknown 0.5)
+    - T = 1 - risk, clipped to [0, 1]
+    """
+    if budget <= 0:
+        raise ValueError("budget must be positive")
+
+    cfg = config or load_config()
+    weights = cfg["personas"][persona]
+    cond_scores = cfg["condition_utility_scores"]
+
+    p_score = max(0.0, min(1.0, 1.0 - (total / budget)))
+    c_score = float(cond_scores.get(condition, cond_scores["unknown"]))
+    t_score = max(0.0, min(1.0, 1.0 - risk))
+
+    utility = (
+        weights["price"] * p_score + weights["condition"] * c_score + weights["trust"] * t_score
+    )
+    return round(utility, 6)
+
+
+def rank_listings(
+    listings: list[EvaluatedListing],
+    budget: float,
+    persona: Persona,
+    config: Optional[dict[str, Any]] = None,
+) -> list[EvaluatedListing]:
+    """Score and rank surviving listings. Ties go to the lower landed cost."""
+    cfg = config or load_config()
+    scored: list[EvaluatedListing] = []
+
+    for item in listings:
+        if item.rejected:
+            continue
+        if item.landed_cost is None:
+            raise ValueError(
+                f"Listing {item.listing.listing_id} missing landed_cost before ranking."
+            )
+        u = compute_utility(
+            total=item.landed_cost.total,
+            budget=budget,
+            condition=item.listing.condition,
+            risk=item.risk_score,
+            persona=persona,
+            config=cfg,
+        )
+        scored.append(item.model_copy(update={"utility_score": u}))
+
+    # Sort descending by utility, then ascending by landed cost total (tie-breaker)
+    scored.sort(
+        key=lambda x: (
+            -(x.utility_score if x.utility_score is not None else -1.0),
+            x.landed_cost.total if x.landed_cost is not None else float("inf"),
+        )
+    )
+    return scored

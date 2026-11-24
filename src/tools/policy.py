@@ -1,0 +1,112 @@
+"""Hard policy enforcement rules in deterministic Python (Section 5)."""
+
+from typing import Optional
+
+from pydantic import BaseModel
+
+from src.schemas import EvaluatedListing
+
+
+class PolicyViolationError(RuntimeError):
+    """Raised when a hard execution-order policy rule is violated."""
+
+
+class PolicyResult(BaseModel):
+    """Structured output of policy filtering."""
+
+    passing: list[EvaluatedListing]
+    rejected: list[EvaluatedListing]
+    closest_rejected: Optional[EvaluatedListing] = None
+
+
+def enforce_reflection_before_ranking(reflection_complete: bool) -> None:
+    """Policy Rule 3: Refuse to rank until every candidate has been through reflection."""
+    if not reflection_complete:
+        raise PolicyViolationError(
+            "Policy Rule 3 violated: cannot rank listings before reflection is complete."
+        )
+
+
+def enforce_number_check_before_speech(number_check_passed: bool) -> None:
+    """Policy Rule 4: Refuse to speak until the number check passes."""
+    if not number_check_passed:
+        raise PolicyViolationError(
+            "Policy Rule 4 violated: cannot speak response before number check passes."
+        )
+
+
+def evaluate_policy(
+    candidates: list[EvaluatedListing],
+    budget: float,
+    risk_reject_threshold: float = 0.6,
+    risk_warn_threshold: float = 0.3,
+    reflection_complete: bool = True,
+) -> PolicyResult:
+    """Apply Policy Rules 1, 2, 3, and 5 to evaluated candidates.
+
+    - Rule 1: Reject any listing whose landed total is over budget.
+    - Rule 2: Reject any listing with risk >= 0.6.
+    - Rule 3: Require reflection_complete=True.
+    - Rule 5: If nothing passes, identify the closest rejected option, its total, and why it failed.
+    """
+    enforce_reflection_before_ranking(reflection_complete)
+
+    passing: list[EvaluatedListing] = []
+    rejected: list[EvaluatedListing] = []
+
+    for item in candidates:
+        if item.landed_cost is None:
+            raise ValueError(
+                f"Listing {item.listing.listing_id} missing landed_cost before policy check."
+            )
+
+        reasons: list[str] = []
+        if item.risk_score >= risk_reject_threshold:
+            reasons.append(
+                f"risk score {item.risk_score:.2f} meets or exceeds ceiling {risk_reject_threshold:.2f}"
+            )
+        if item.landed_cost.total > budget:
+            reasons.append(
+                f"landed total ${item.landed_cost.total:.2f} exceeds budget ${budget:.2f}"
+            )
+
+        if reasons:
+            rejected.append(
+                item.model_copy(
+                    update={
+                        "rejected": True,
+                        "rejection_reason": "; ".join(reasons),
+                    }
+                )
+            )
+        else:
+            warning = item.warning
+            if item.risk_score >= risk_warn_threshold and not warning:
+                warning = f"Moderate risk ({item.risk_score:.2f}); verify photos and payment terms."
+            passing.append(
+                item.model_copy(
+                    update={
+                        "rejected": False,
+                        "rejection_reason": None,
+                        "warning": warning,
+                    }
+                )
+            )
+
+    closest_rejected: Optional[EvaluatedListing] = None
+    if not passing and rejected:
+        # Prefer safe listings that only missed on budget; otherwise lowest risk then closest total.
+        closest_rejected = min(
+            rejected,
+            key=lambda x: (
+                x.risk_score >= risk_reject_threshold,
+                abs((x.landed_cost.total if x.landed_cost else float("inf")) - budget),
+                x.risk_score,
+            ),
+        )
+
+    return PolicyResult(
+        passing=passing,
+        rejected=rejected,
+        closest_rejected=closest_rejected,
+    )
