@@ -1,0 +1,1060 @@
+[
+ {
+  "id": "S01",
+  "marketplace_listing_title": "Charizard base set 4/102 holo LP",
+  "listing_price": {
+   "amount": "320.00",
+   "formatted_amount": "$320"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Troy",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S01_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S01_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S01_2.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Light whitening on the back edges, no creases. Can meet at Somerset Collection."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S02",
+  "marketplace_listing_title": "Base Set Charizard 4/102 NM!!",
+  "listing_price": {
+   "amount": "55.00",
+   "formatted_amount": "$55"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Detroit",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S02_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Zelle only. I ship after payment, no meetups. Price is firm."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S03",
+  "marketplace_listing_title": "Charizard holo base 4/102 heavily played",
+  "listing_price": {
+   "amount": "140.00",
+   "formatted_amount": "$140"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Sterling Heights",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S03_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S03_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Crease on the bottom right corner and edge wear. Still a great binder card, priced for condition."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "decoy",
+  "split": "dev"
+ },
+ {
+  "id": "S04",
+  "marketplace_listing_title": "Charizard 4/102 base set unlimited holo",
+  "listing_price": {
+   "amount": "360.00",
+   "formatted_amount": "$360"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Royal Oak",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S04_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S04_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S04_2.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S04_3.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Pulled in 1999, kept in a binder since. Near mint, see all photos. Meet in Royal Oak."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S05",
+  "marketplace_listing_title": "Charizard base set proxy holo",
+  "listing_price": {
+   "amount": "25.00",
+   "formatted_amount": "$25"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Detroit",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S05_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "High quality proxy for binders, not original."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S06",
+  "marketplace_listing_title": "1st Edition Charizard PSA 9 base set",
+  "listing_price": {
+   "amount": "9000.00",
+   "formatted_amount": "$9,000"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Novi",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S06_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S06_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Graded PSA 9, serious buyers only."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "out_of_scope",
+  "split": "dev"
+ },
+ {
+  "id": "S07",
+  "marketplace_listing_title": "Charizard base 4/102 holo",
+  "listing_price": {
+   "amount": "300.00",
+   "formatted_amount": "$300"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Southfield",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S07_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Price firm, lots of interest. Stock photo but card is the same condition."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S08",
+  "marketplace_listing_title": "Pokemon card lot 50 cards + Charizard",
+  "listing_price": {
+   "amount": "200.00",
+   "formatted_amount": "$200"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Ann Arbor",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S08_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S08_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S08_2.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Mixed lot from my collection, mostly commons."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "out_of_scope",
+  "split": "dev"
+ },
+ {
+  "id": "S09",
+  "marketplace_listing_title": "Charizard ex 199/165 SIR Pokemon 151",
+  "listing_price": {
+   "amount": "105.00",
+   "formatted_amount": "$105"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Troy",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S09_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S09_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S09_2.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Pulled it myself, straight to sleeve and toploader. Pack fresh."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S10",
+  "marketplace_listing_title": "Charizard ex 151 special illustration 199/165",
+  "listing_price": {
+   "amount": "35.00",
+   "formatted_amount": "$35"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Detroit",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S10_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Brand new, need it gone today. Cash App only, will ship."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S11",
+  "marketplace_listing_title": "Charizard ex 199/165 MP 151",
+  "listing_price": {
+   "amount": "70.00",
+   "formatted_amount": "$70"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Rochester Hills",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S11_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S11_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Some edge wear and a small scratch on the holo. Priced to sell."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "decoy",
+  "split": "dev"
+ },
+ {
+  "id": "S12",
+  "marketplace_listing_title": "Charizard ex SAR 201/165 Japanese 151",
+  "listing_price": {
+   "amount": "90.00",
+   "formatted_amount": "$90"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Novi",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S12_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S12_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Japanese version, near mint."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "out_of_scope",
+  "split": "dev"
+ },
+ {
+  "id": "S13",
+  "marketplace_listing_title": "Blastoise holo base set 2/102 LP",
+  "listing_price": {
+   "amount": "95.00",
+   "formatted_amount": "$95"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Troy",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S13_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S13_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S13_2.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Small whitening on the back corners. Meet at a public place in Troy."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S14",
+  "marketplace_listing_title": "Blastoise 2/102 base set holo",
+  "listing_price": {
+   "amount": "30.00",
+   "formatted_amount": "$30"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Detroit",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S14_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Custom card, looks just like the real one!"
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S15",
+  "marketplace_listing_title": "Blastoise base set holo 2/102 damaged",
+  "listing_price": {
+   "amount": "35.00",
+   "formatted_amount": "$35"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Warren",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S15_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S15_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Water damage and a bent corner, priced accordingly."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "decoy",
+  "split": "dev"
+ },
+ {
+  "id": "S16",
+  "marketplace_listing_title": "Venusaur 15/102 holo base set",
+  "listing_price": {
+   "amount": "85.00",
+   "formatted_amount": "$85"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Royal Oak",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S16_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S16_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S16_2.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Near mint, kept in a toploader since childhood."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S17",
+  "marketplace_listing_title": "Venusaur base set holo 15/102 NM",
+  "listing_price": {
+   "amount": "90.00",
+   "formatted_amount": "$90"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Dearborn",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S17_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Shipping only. Please pay with PayPal Friends and Family to avoid fees."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S18",
+  "marketplace_listing_title": "Pikachu VMAX 044/185 Vivid Voltage",
+  "listing_price": {
+   "amount": "12.00",
+   "formatted_amount": "$12"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Troy",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S18_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S18_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Pack fresh, sleeved right away."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S19",
+  "marketplace_listing_title": "Pikachu VMAX 044/185 LP",
+  "listing_price": {
+   "amount": "9.00",
+   "formatted_amount": "$9"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Auburn Hills",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S19_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Light wear on the edges."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S20",
+  "marketplace_listing_title": "Pikachu VMAX 44/185",
+  "listing_price": {
+   "amount": "3.00",
+   "formatted_amount": "$3"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Detroit",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S20_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Orica art card, full art style."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S21",
+  "marketplace_listing_title": "Pikachu VMAX and Pikachu V bundle",
+  "listing_price": {
+   "amount": "15.00",
+   "formatted_amount": "$15"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Livonia",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S21_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S21_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Two cards together."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "out_of_scope",
+  "split": "dev"
+ },
+ {
+  "id": "S22",
+  "marketplace_listing_title": "Pikachu 58/102 base set red cheeks",
+  "listing_price": {
+   "amount": "8.00",
+   "formatted_amount": "$8"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Ferndale",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S22_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Red cheeks version, light play."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S23",
+  "marketplace_listing_title": "Pikachu base set 58/102 yellow cheeks played",
+  "listing_price": {
+   "amount": "4.00",
+   "formatted_amount": "$4"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Clawson",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S23_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Well loved, from my old binder."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "decoy",
+  "split": "dev"
+ },
+ {
+  "id": "S24",
+  "marketplace_listing_title": "Mewtwo 10/102 holo base set",
+  "listing_price": {
+   "amount": "38.00",
+   "formatted_amount": "$38"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Troy",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S24_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S24_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Light wear on the edges, no creases."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S25",
+  "marketplace_listing_title": "Mewtwo base set holo 10/102 NM",
+  "listing_price": {
+   "amount": "10.00",
+   "formatted_amount": "$10"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Detroit",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "SHIPPING"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S25_0.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "First come first serve. Send a deposit to hold it."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "trap",
+  "split": "dev"
+ },
+ {
+  "id": "S26",
+  "marketplace_listing_title": "Mewtwo holo 10/102 well loved",
+  "listing_price": {
+   "amount": "18.00",
+   "formatted_amount": "$18"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Madison Heights",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S26_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S26_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Well loved childhood card, whitening and edge wear."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "decoy",
+  "split": "dev"
+ },
+ {
+  "id": "S27",
+  "marketplace_listing_title": "Zapdos 16/102 base set holo",
+  "listing_price": {
+   "amount": "42.00",
+   "formatted_amount": "$42"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Rochester Hills",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S27_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S27_1.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Lightly played, meet in Rochester Hills."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "legit",
+  "split": "dev"
+ },
+ {
+  "id": "S28",
+  "marketplace_listing_title": "Zapdos holo base set 16/102",
+  "listing_price": {
+   "amount": "20.00",
+   "formatted_amount": "$20"
+  },
+  "location": {
+   "reverse_geocode": {
+    "city": "Troy",
+    "state": "MI"
+   }
+  },
+  "delivery_types": [
+   "IN_PERSON"
+  ],
+  "listing_photos": [
+   {
+    "uri": "https://example.invalid/S28_0.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S28_1.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S28_2.jpg"
+   },
+   {
+    "uri": "https://example.invalid/S28_3.jpg"
+   }
+  ],
+  "redacted_description": {
+   "text": "Selling my childhood binder cheap, lightly played, clear pics of front and back. Meet at a Starbucks."
+  },
+  "marketplace_listing_seller": {
+   "name": "REMOVED",
+   "id": "REMOVED"
+  },
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "synthetic": true,
+  "label": "decoy",
+  "split": "dev"
+ }
+]

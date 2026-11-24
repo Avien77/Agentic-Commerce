@@ -2,15 +2,22 @@
 # Never hardcode these values in Python modules.
 
 models:
-  primary: "gemini-3.8-flash"          # Billing enabled; primary agent LLM
-  primary_free_tier: "gemini-3.5-flash-lite"
+  primary: "gemini-3.8-flash"          # Primary agent LLM
+  primary_free_tier: "gemini-3.5-flash-lite"   # Higher free daily quota; automatic fallback
   small: "openai/gpt-oss-20b"          # Groq; Ablation 5
-  frontier: "gemini-3.1-pro"           # Paid; Ablation 6 (single pass)
+  frontier: "gemini-3.1-pro-preview"   # Paid; Ablation 6 (single pass)
   judge: "openai/gpt-oss-120b"         # Groq; LLM-as-judge
+  offline: "rules"                     # No API calls: rule-based stand-ins, for tests and demos
   stt: "whisper-large-v3-turbo"        # Groq STT
   stt_fallback: "small.en"             # Local faster-whisper
   tts: "edge-tts"                      # Primary neural TTS
   temperature: 0.0
+
+llm:
+  active: primary          # key under `models:` the agents use. Env AGENTIC_LLM overrides it.
+  fallback: primary_free_tier   # used when the active model's quota runs out (429 after retries)
+  max_retries: 3           # retries on rate limits, with exponential backoff
+  cache_dir: .cache/llm    # every response is cached on disk, so re-runs are free
 
 pricing:
   default_shipping_estimate: 5.00      # Used when shipping is unknown and not in-person
@@ -23,6 +30,10 @@ thresholds:
   price_risk_high_ratio: 0.4           # < 40% of condition-adjusted market price -> r_price = 1.0
   price_risk_med_ratio: 0.6            # 40%-60% of condition-adjusted market price -> r_price = 0.5
   info_missing_penalty: 0.25           # Missing both card number and clear photo -> r_info = 0.25
+  red_flag_severity:                   # r_text for the worst matching red flag
+    high: 1.0
+    medium: 0.5
+  price_check_fair_max: 1.15           # asked price up to 115% of market (for its condition) is fair
 
 condition_price_multipliers:
   NM: 1.00
@@ -59,3 +70,55 @@ limits:
   max_search_retries: 1
   max_humanizer_retries: 1
   tts_timeout_seconds: 3.0
+
+data:
+  use_samples: true          # set to false once the pipeline has written data/listings.json
+  listings: data/listings.json
+  prices: data/prices.json
+  sample_listings: data/samples/sample_listings.json
+  sample_prices: data/samples/sample_prices.json
+  sample_raw: data/samples/sample_raw_listings.json
+  red_flags: data/red_flags.md
+  raw_dir: data/raw          # raw Apify output (gitignored: it has seller data)
+  review_sheet: data/listings_review.csv
+  tcgdex_sets: data/tcgdex_sets.json
+
+scrape:
+  actor: apify/facebook-marketplace-scraper
+  city: detroit              # Facebook Marketplace city slug
+  queries:
+    - pokemon charizard card
+    - pokemon base set holo
+    - pokemon card pikachu
+    - pokemon 151 charizard ex
+    - pokemon blastoise venusaur card
+  results_limit: 100         # total across all queries (5 for a test run)
+  include_listing_details: true   # descriptions are needed for the red-flag check
+  max_charge_usd: 2.0        # hard Apify spend cap per run
+
+ingest:
+  batch_size: 20             # listings per LLM call, keeps free-tier usage low
+
+tcgdex:
+  base_url: https://api.tcgdex.net/v2/en
+  timeout_s: 15
+
+search:
+  fuzzy_threshold: 85        # card-name match on the first search
+  relaxed_fuzzy_threshold: 75   # on the retry
+  max_candidates: 15
+
+merchant:
+  live: false                # true: also scrape Marketplace for each new card search
+  live_limit: 20
+  live_max_charge_usd: 0.5
+  live_listings: data/live_listings.json   # anonymized live results, reused next time
+
+rag:
+  enabled: true              # Chroma retrieval over red flags for the flag explanations
+  persist_dir: .cache/chroma
+  top_k: 3
+
+response:
+  max_alternatives: 1
+  ai_disclosure: "Hi, I'm an AI shopping assistant."

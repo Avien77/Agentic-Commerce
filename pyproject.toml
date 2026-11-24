@@ -26,6 +26,8 @@ dev = [
     "pytest>=8.3.0",
     "ruff>=0.8.0",
     "pre-commit>=4.0.0",
+    "ipykernel>=6.29",
+    "nbmake>=1.5",
 ]
 
 [tool.pytest.ini_options]
@@ -35,3 +37,8 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint.per-file-ignores]
+# A notebook defines a module's names in its export cells, then its demo cells import the
+# same names from src/ again (and one notebook exports several modules that import each other).
+"notebooks/*.ipynb" = ["F811"]

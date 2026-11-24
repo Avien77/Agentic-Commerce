@@ -1,0 +1,83 @@
+[
+ {
+  "id": "Q01",
+  "request": "Find me a Base Set Charizard under $400, I care about condition",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S04"
+  ]
+ },
+ {
+  "id": "Q02",
+  "request": "I need a Pikachu VMAX for my kid, budget is 15 dollars",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S19",
+   "S18"
+  ]
+ },
+ {
+  "id": "Q03",
+  "request": "Looking for a Charizard",
+  "clarify_answer": "The 151 one, up to $120",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S09",
+   "S11"
+  ]
+ },
+ {
+  "id": "Q04",
+  "request": "Base Set Mewtwo under $50",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S24",
+   "S26"
+  ]
+ },
+ {
+  "id": "Q05",
+  "request": "Charizard ex 199/165 under $120, I don't want to get scammed",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S09",
+   "S11"
+  ]
+ },
+ {
+  "id": "Q06",
+  "request": "Blastoise base set, budget $40",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S15"
+  ]
+ },
+ {
+  "id": "Q07",
+  "request": "Venusaur base set holo under $100",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S16"
+  ]
+ },
+ {
+  "id": "Q08",
+  "request": "Zapdos base set under $30",
+  "expect_status": "recommend",
+  "acceptable": [
+   "S28"
+  ]
+ },
+ {
+  "id": "Q09",
+  "request": "Base Set Charizard under $100",
+  "expect_status": "nothing_fits",
+  "acceptable": []
+ },
+ {
+  "id": "Q10",
+  "request": "Is $45 fair for a lightly played base set Mewtwo?",
+  "expect_status": "price_check",
+  "acceptable": []
+ }
+]
