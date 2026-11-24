@@ -1,6 +1,6 @@
 # Build log: Agentic Commerce
 
-**Last updated:** 2026-11-24 · **Branch:** `notebooks` · **Tests:** 60 passing · **Notebooks:** all 8 run top to bottom offline
+**Last updated:** 2026-11-24 · **Branch:** `main` · **Tests:** 60 passing · **Notebooks:** all 8 run top to bottom offline
 
 This file records how the project is built and how it runs, what every file is for, and what changed when. Read it before touching the code.
 
@@ -102,7 +102,7 @@ DONE        Consumer  save profile and query to SQLite
 ### Commands
 
 ```bash
-uv sync                              # install (incl. ipykernel and nbmake for notebooks)
+uv sync                              # Python 3.14 + everything (incl. ipykernel and nbmake)
 uv run pytest                        # all tests offline, incl. running every notebook
 uv run python -m src.nbexport        # export all notebooks to src/
 uv run python -m src.nbexport --check   # exit 1 if a module is stale
@@ -230,6 +230,19 @@ Agentic-Commerce/
 ## Change log
 
 Newest first.
+
+### 2026-11-24 · Project moved to Python 3.14
+
+- `.python-version` 3.12 → 3.14; `pyproject.toml` `requires-python` `>=3.12,<3.13` → `>=3.14,<3.15`, ruff `target-version` `py312` → `py314`; `.github/workflows/ci.yml` installs 3.14.
+- `uv.lock` re-resolved for 3.14. No package version changed; every package has 3.14 wheels for macOS arm64 and Linux (checked), and Chroma/onnxruntime work on 3.14.
+- Code: `src/llm.py` (notebook 00) drops the quotes in `fallback: LLM | None`, which 3.14's lazy annotations allow (ruff UP037). `src/nbexport.py` uses 3.14's `except SyntaxError, IndexError:` form, as ruff formats it for py314. Setup-cell message now says `.venv (Python 3.14)`.
+- `pyproject.toml`: pytest ignores one 3.14 deprecation warning raised inside langsmith (a langgraph dependency).
+- After pulling: run `uv sync` (it rebuilds `.venv` on 3.14), then pick the `.venv` kernel in each notebook.
+- Tests: 60 passing on 3.14, ruff clean.
+
+### 2026-11-24 · Kernel check in every notebook's setup cell
+
+`notebooks/00`–`07`: the setup cell now checks that `yaml`, `dotenv`, `langgraph` and `pydantic` can be imported before anything else runs. If VS Code picked a kernel other than the project's `.venv`, the notebook stops with a message naming that kernel and saying how to switch, instead of a bare `ModuleNotFoundError: No module named 'yaml'` in the config cell. No exported code changed. Tests: 60 passing.
 
 ### 2026-11-24 · Pablo's code reviewed, moved into notebooks; pipeline, Merchant and Humanizer added
 

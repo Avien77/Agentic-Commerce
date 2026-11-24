@@ -43,7 +43,7 @@ def _join(chunks: list[str]) -> str:
     for prev, nxt in itertools.pairwise(chunks):
         try:
             last = ast.parse(prev).body[-1]
-        except (SyntaxError, IndexError):
+        except SyntaxError, IndexError:
             last = None
         after_imports = isinstance(last, ast.Import | ast.ImportFrom)
         is_def = nxt.lstrip().startswith(("def ", "class ", "@", "async def "))

@@ -1,6 +1,6 @@
 # Voice-Driven Multi-Agent Commerce for Pokémon Trading Cards
 
-A local, voice-to-voice multi-agent system built with **LangGraph** and **Python 3.12** that
+A local, voice-to-voice multi-agent system built with **LangGraph** and **Python 3.14** that
 helps buyers evaluate peer-to-peer Pokémon TCG listings on Facebook Marketplace. It
 identifies the exact card behind messy listing titles, checks prices against TCGdex market
 data, filters out likely scams through external reflection, enforces budget and safety
@@ -34,7 +34,7 @@ out of date with its notebook. Full details: [`BUILD_LOG.md`](BUILD_LOG.md).
 ## Setup
 
 ```bash
-uv sync                      # Python 3.12 + all dependencies, incl. Jupyter kernel
+uv sync                      # Python 3.14 + all dependencies, incl. Jupyter kernel
 cp .env.example .env         # then fill in GEMINI_API_KEY, GROQ_API_KEY, APIFY_API_TOKEN
 uv run pytest                # everything offline: no keys, no network
 ```
