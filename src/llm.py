@@ -67,7 +67,7 @@ class LLM:
     max_retries: int = 3
     cache_dir: str | None = ".cache/llm"
     repeat: int = 0  # part of the cache key, so experiment repeats make real calls
-    fallback: "LLM | None" = None  # used once the quota for `model` runs out
+    fallback: LLM | None = None  # used once the quota for `model` runs out
     calls: list[CallLog] = field(default_factory=list)
 
     def __post_init__(self) -> None:

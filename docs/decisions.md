@@ -14,3 +14,4 @@ Format: `YYYY-MM-DD | Decision | Rationale`
 - 2026-11-24 | LLM-facing schemas avoid `gt`/`lt` constraints (Gemini's schema subset rejects `exclusiveMinimum`); code validates instead. | Pablo's intent call would have failed on its first live request.
 - 2026-11-24 | Frontier model id corrected to `gemini-3.1-pro-preview`. | The id Google publishes.
 - 2026-11-24 | The AI disclosure is added by `ChatSession` on the first reply of a session, not by every reply. | Plan Section 6: "at the start of each session".
+- 2026-11-24 | Python 3.14 instead of 3.12 (`.python-version`, `requires-python = ">=3.14,<3.15"`, ruff `py314`, CI). Every locked package has 3.14 wheels for macOS arm64 and Linux; no package version changed in `uv.lock`. | Gaurav's VS Code environment is 3.14; one version for both machines.
