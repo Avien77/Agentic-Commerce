@@ -1,0 +1,464 @@
+[
+ {
+  "id": "M01",
+  "split": "dev",
+  "turns": [
+   {
+    "id": "M01a",
+    "split": "dev",
+    "category": "memory",
+    "text": "I'm a serious collector, condition matters. Base Set Charizard under $450",
+    "clarify_answer": null,
+    "truth": {
+     "printings": [
+      "charizard_base"
+     ],
+     "budget": 450,
+     "min_condition": null,
+     "persona": "serious_collector"
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV083"
+     ],
+     "valid": [
+      "EV005",
+      "EV009",
+      "EV021",
+      "EV040",
+      "EV066",
+      "EV076",
+      "EV083"
+     ],
+     "bait_traps": [
+      "EV002",
+      "EV024",
+      "EV045"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV083": 0.9544,
+      "EV066": 0.8704,
+      "EV076": 0.8582,
+      "EV009": 0.85,
+      "EV021": 0.6723
+     }
+    }
+   },
+   {
+    "id": "M01b",
+    "split": "dev",
+    "category": "memory",
+    "text": "Now find me a Base Set Blastoise",
+    "clarify_answer": "Same budget, $450",
+    "truth": {
+     "printings": [
+      "blastoise_base"
+     ],
+     "budget": 450,
+     "min_condition": null,
+     "persona": "serious_collector",
+     "from_memory": [
+      "budget",
+      "persona"
+     ]
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV081"
+     ],
+     "valid": [
+      "EV016",
+      "EV052",
+      "EV061",
+      "EV064",
+      "EV078",
+      "EV081",
+      "EV095"
+     ],
+     "bait_traps": [
+      "EV034",
+      "EV080",
+      "EV100"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV081": 0.9574,
+      "EV052": 0.8414,
+      "EV061": 0.829,
+      "EV064": 0.7933,
+      "EV095": 0.7047
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "M02",
+  "split": "test",
+  "turns": [
+   {
+    "id": "M02a",
+    "split": "test",
+    "category": "memory",
+    "text": "Cheapest Base Set Venusaur for my kid, under $90",
+    "clarify_answer": null,
+    "truth": {
+     "printings": [
+      "venusaur_base"
+     ],
+     "budget": 90,
+     "min_condition": null,
+     "persona": "budget_parent"
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV046",
+      "EV094"
+     ],
+     "valid": [
+      "EV013",
+      "EV046",
+      "EV059",
+      "EV094"
+     ],
+     "bait_traps": [
+      "EV025",
+      "EV073"
+     ],
+     "decoy_only": true,
+     "oracle_scores": {
+      "EV094": 0.9425,
+      "EV046": 0.9228,
+      "EV059": 0.7207,
+      "EV013": 0.4163
+     }
+    }
+   },
+   {
+    "id": "M02b",
+    "split": "test",
+    "category": "memory",
+    "text": "What about a Blastoise from the same set?",
+    "clarify_answer": "Base Set, under $90",
+    "truth": {
+     "printings": [
+      "blastoise_base"
+     ],
+     "budget": 90,
+     "min_condition": null,
+     "persona": "budget_parent",
+     "from_memory": [
+      "budget",
+      "persona",
+      "set"
+     ]
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV016"
+     ],
+     "valid": [
+      "EV016"
+     ],
+     "bait_traps": [
+      "EV080"
+     ],
+     "decoy_only": true,
+     "oracle_scores": {
+      "EV016": 0.9542
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "M03",
+  "split": "dev",
+  "turns": [
+   {
+    "id": "M03a",
+    "split": "dev",
+    "category": "memory",
+    "text": "I'm careful, I got scammed last year. Lugia V alt art from Silver Tempest under $100",
+    "clarify_answer": null,
+    "truth": {
+     "printings": [
+      "lugia_st"
+     ],
+     "budget": 100,
+     "min_condition": null,
+     "persona": "cautious_buyer"
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV012",
+      "EV037",
+      "EV038"
+     ],
+     "valid": [
+      "EV012",
+      "EV032",
+      "EV037",
+      "EV038",
+      "EV096"
+     ],
+     "bait_traps": [
+      "EV051",
+      "EV057",
+      "EV075"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV038": 1.0,
+      "EV037": 0.97,
+      "EV012": 0.9382,
+      "EV096": 0.7085,
+      "EV032": 0.5158
+     }
+    }
+   },
+   {
+    "id": "M03b",
+    "split": "dev",
+    "category": "memory",
+    "text": "Same budget, but for the Mew ex from 151",
+    "clarify_answer": "$100",
+    "truth": {
+     "printings": [
+      "mew_ex_151"
+     ],
+     "budget": 100,
+     "min_condition": null,
+     "persona": "cautious_buyer",
+     "from_memory": [
+      "budget"
+     ]
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV048",
+      "EV060"
+     ],
+     "valid": [
+      "EV004",
+      "EV010",
+      "EV031",
+      "EV048",
+      "EV055",
+      "EV060",
+      "EV087"
+     ],
+     "bait_traps": [
+      "EV058",
+      "EV097",
+      "EV098"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV048": 1.0,
+      "EV060": 0.9351,
+      "EV087": 0.9127,
+      "EV031": 0.88,
+      "EV055": 0.5778
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "M04",
+  "split": "test",
+  "turns": [
+   {
+    "id": "M04a",
+    "split": "test",
+    "category": "memory",
+    "text": "Charizard ex from 151, near mint only, under $125",
+    "clarify_answer": null,
+    "truth": {
+     "printings": [
+      "charizard_ex_151"
+     ],
+     "budget": 125,
+     "min_condition": "NM",
+     "persona": "cautious_buyer"
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV072",
+      "EV090"
+     ],
+     "valid": [
+      "EV020",
+      "EV027",
+      "EV047",
+      "EV072",
+      "EV090"
+     ],
+     "bait_traps": [
+      "EV029",
+      "EV054",
+      "EV085"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV072": 0.9366,
+      "EV090": 0.8984,
+      "EV047": 0.6083,
+      "EV027": 0.5741,
+      "EV020": 0.553
+     }
+    }
+   },
+   {
+    "id": "M04b",
+    "split": "test",
+    "category": "memory",
+    "text": "Now the Mew ex from that set, same condition",
+    "clarify_answer": "Near mint, under $125",
+    "truth": {
+     "printings": [
+      "mew_ex_151"
+     ],
+     "budget": 125,
+     "min_condition": "NM",
+     "persona": "cautious_buyer",
+     "from_memory": [
+      "budget",
+      "condition",
+      "set"
+     ]
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV048",
+      "EV060"
+     ],
+     "valid": [
+      "EV004",
+      "EV048",
+      "EV060",
+      "EV087"
+     ],
+     "bait_traps": [
+      "EV058",
+      "EV097",
+      "EV098"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV048": 1.0,
+      "EV060": 0.9351,
+      "EV087": 0.9127,
+      "EV004": 0.5627
+     }
+    }
+   }
+  ]
+ },
+ {
+  "id": "M05",
+  "split": "test",
+  "turns": [
+   {
+    "id": "M05a",
+    "split": "test",
+    "category": "memory",
+    "text": "For my collection: Pikachu ex Surging Sparks SIR under $330",
+    "clarify_answer": null,
+    "truth": {
+     "printings": [
+      "pikachu_ex_ss"
+     ],
+     "budget": 330,
+     "min_condition": null,
+     "persona": "serious_collector"
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV023",
+      "EV036"
+     ],
+     "valid": [
+      "EV007",
+      "EV011",
+      "EV015",
+      "EV018",
+      "EV023",
+      "EV036",
+      "EV074"
+     ],
+     "bait_traps": [
+      "EV019",
+      "EV028",
+      "EV067"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV036": 1.0,
+      "EV023": 0.958,
+      "EV015": 0.8625,
+      "EV074": 0.85,
+      "EV018": 0.8311
+     }
+    }
+   },
+   {
+    "id": "M05b",
+    "split": "test",
+    "category": "memory",
+    "text": "Also the Umbreon VMAX alt art, my budget for that one is $1,300",
+    "clarify_answer": null,
+    "truth": {
+     "printings": [
+      "umbreon_es"
+     ],
+     "budget": 1300,
+     "min_condition": null,
+     "persona": "serious_collector",
+     "from_memory": [
+      "persona"
+     ]
+    },
+    "key": {
+     "expect": "recommend",
+     "acceptable": [
+      "EV088"
+     ],
+     "valid": [
+      "EV003",
+      "EV033",
+      "EV082",
+      "EV088",
+      "EV089",
+      "EV091",
+      "EV092"
+     ],
+     "bait_traps": [
+      "EV042",
+      "EV086",
+      "EV093"
+     ],
+     "decoy_only": false,
+     "oracle_scores": {
+      "EV088": 0.9572,
+      "EV082": 0.8722,
+      "EV033": 0.8577,
+      "EV003": 0.8373,
+      "EV089": 0.7967
+     }
+    }
+   }
+  ]
+ }
+]

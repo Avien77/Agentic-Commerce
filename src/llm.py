@@ -67,6 +67,7 @@ class LLM:
     max_retries: int = 3
     cache_dir: str | None = ".cache/llm"
     repeat: int = 0  # part of the cache key, so experiment repeats make real calls
+    thinking_level: str | None = None  # minimal, low, medium, high (None = model default)
     fallback: LLM | None = None  # used once the quota for `model` runs out
     calls: list[CallLog] = field(default_factory=list)
 
@@ -99,7 +100,7 @@ class LLM:
     def _key(self, system: str, prompt: str, schema: type[BaseModel] | None) -> str:
         blob = json.dumps(
             [self.model, system, prompt, schema.__name__ if schema else None, self.temperature,
-             self.repeat],
+             self.repeat, self.thinking_level],
             ensure_ascii=False,
         )  # fmt: skip
         return hashlib.sha256(blob.encode()).hexdigest()
@@ -158,6 +159,10 @@ class LLM:
                 raise LLMError("GEMINI_API_KEY is missing. Add it to .env (see .env.example).")
             self._client = genai.Client(api_key=key)
         cfg: dict[str, Any] = {"system_instruction": system, "temperature": self.temperature}
+        if self.thinking_level:
+            cfg["thinking_config"] = types.ThinkingConfig(
+                thinking_level=self.thinking_level.upper()
+            )
         if schema is not None:
             cfg["response_mime_type"] = "application/json"
             cfg["response_schema"] = schema
@@ -165,9 +170,11 @@ class LLM:
             model=self.model, contents=prompt, config=types.GenerateContentConfig(**cfg)
         )
         meta = resp.usage_metadata
-        tokens = (
-            (meta.prompt_token_count or 0, meta.candidates_token_count or 0) if meta else (0, 0)
+        # Thinking tokens are billed as output, so they count as completion tokens here.
+        out_tokens = (
+            (meta.candidates_token_count or 0) + (meta.thoughts_token_count or 0) if meta else 0
         )
+        tokens = ((meta.prompt_token_count or 0) if meta else 0, out_tokens)
         if schema is None:
             return resp.text or "", tokens
         parsed = resp.parsed
@@ -183,6 +190,10 @@ class LLM:
                 raise LLMError("GROQ_API_KEY is missing. Add it to .env (see .env.example).")
             self._client = Groq(api_key=key)
         kwargs: dict[str, Any] = {}
+        if self.thinking_level and "gpt-oss" in self.model:  # gpt-oss: low | medium | high
+            kwargs["reasoning_effort"] = {"minimal": "low"}.get(
+                self.thinking_level, self.thinking_level
+            )
         if schema is not None:
             system += (
                 "\n\nReply with only a JSON object that matches this JSON Schema:\n"
@@ -216,6 +227,7 @@ def make_llm(cfg: dict[str, Any], model_key: str | None = None, repeat: int = 0)
             max_retries=settings["max_retries"],
             cache_dir=settings["cache_dir"],
             repeat=repeat,
+            thinking_level=settings.get("thinking_level"),
         )
 
     llm = build(key)

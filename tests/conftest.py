@@ -21,6 +21,8 @@ def cfg():
     c["data"]["use_samples"] = True
     c["rag"]["enabled"] = False
     c["merchant"]["live"] = False
+    c["dialogue"]["greet"] = False  # tests of the new conversation flow turn these back on
+    c["dialogue"]["confirm"] = False
     return c
 
 

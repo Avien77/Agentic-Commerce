@@ -52,7 +52,8 @@ Rules:
 - is_consultative: true when the buyer asks for advice or a price check instead of asking
   to buy, e.g. "is $40 fair for a Base Set Charizard?"; asked_price is the price they ask
   about.
-Use only what this message says."""
+Use only what this message says. If clarification answers or corrections follow the request,
+they change it, and the latest one wins (e.g. "under $400" then "make it $300" -> 300)."""
 
 
 def parse_intent(llm: LLM, text: str) -> IntentExtraction:
@@ -237,17 +238,20 @@ def offline_intent(_system: str, prompt: str) -> dict:
         out["asked_price"] = float(pm.group(1)) if pm else None
         out["min_condition"] = guess_condition(text)
     else:
-        m = re.search(
-            r"(?:under|below|budget(?: is)?|max(?:imum)?|up to|spend|have)\s*\$?\s*(\d+(?:\.\d+)?)",
-            low,
-        )
-        m = (
-            m
-            or re.search(r"\$\s*(\d+(?:\.\d+)?)", low)
-            or re.search(r"(\d+(?:\.\d+)?)\s*(?:dollars|bucks)", low)
-        )
-        if m:
-            out["budget"] = float(m.group(1))
+        for part in reversed(low.split("\n")):  # the latest answer or correction wins
+            m = re.search(
+                r"(?:under|below|budget(?: is)?|max(?:imum)?|up to|spend|have|make it)\s*\$?\s*"
+                r"(\d+(?:\.\d+)?)",
+                part,
+            )
+            m = (
+                m
+                or re.search(r"\$\s*(\d+(?:\.\d+)?)", part)
+                or re.search(r"(\d+(?:\.\d+)?)\s*(?:dollars|bucks)", part)
+            )
+            if m:
+                out["budget"] = float(m.group(1))
+                break
     if re.search(r"\b(kid|son|daughter|child|cheap|cheapest)\b", low):
         out["persona"] = "budget_parent"
     elif re.search(r"\b(scam\w*|safe\w*|legit|trust\w*|fake)\b", low):

@@ -25,7 +25,7 @@ def test_every_sample_query(app, cfg, queries):
         if q["expect_status"] == "nothing_fits":
             assert not ranked and "closest" in reply, q["id"]
         if q["expect_status"] == "price_check":
-            assert "usually goes for" in reply, q["id"]
+            assert f"${state['price_check']['market_for_condition']:,.2f}" in reply, q["id"]
         for item in ranked:
             assert item.listing.label != "trap", (q["id"], item.listing.listing_id)
 
@@ -61,3 +61,18 @@ def test_no_budget_after_the_one_question_still_answers(app, cfg):
     reply, state = chat.send("The 151 one")  # still no budget: no second question, no crash
     assert state["current_state"] == "DONE" and state["parsed_query"].budget is None
     assert state["ranked_listings"][0].listing.card_name == "Charizard ex" and "$" in reply
+
+
+def test_terminal_entry_point(monkeypatch, capsys, tmp_path):
+    from src.graph import main
+
+    assert main(["--demo", "--offline"]) == 0
+    assert "10/10 sample queries passed" in capsys.readouterr().out
+    answers = iter(["I'm good!", "Base Set Mewtwo under $50", "yes", "quit"])
+    monkeypatch.setattr("builtins.input", lambda _prompt="": next(answers))
+    assert main(["--offline", "--db", str(tmp_path / "m.sqlite")]) == 0
+    out = capsys.readouterr().out
+    assert "assistant: Hi! I'm your AI card-shopping assistant. How are you doing today?" in out
+    assert "assistant: Glad to hear it! So what cards are we looking for today?" in out
+    assert "Okay, so just to confirm: you're looking for a Mewtwo from Base Set" in out
+    assert "Your best bet is the Mewtwo" in out

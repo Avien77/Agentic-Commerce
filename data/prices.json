@@ -1,0 +1,240 @@
+{
+ "base1-15": {
+  "name": "Venusaur",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 133.88
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:19.511Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "base1-2": {
+  "name": "Blastoise",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 232.43
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:19.511Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "base1-4": {
+  "name": "Charizard",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 1001.05
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:19.511Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "base4-4": {
+  "name": "Charizard",
+  "set_name": "Base Set 2",
+  "variants": {
+   "holofoil": 513.67
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:19.763Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "gym2-14": {
+  "name": "Rocket's Mewtwo",
+  "set_name": "Gym Challenge",
+  "variants": {
+   "1st-edition-holofoil": 433.35,
+   "unlimited-holofoil": 294.67
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:20.091Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "neo2-13": {
+  "name": "Umbreon",
+  "set_name": "Neo Discovery",
+  "variants": {
+   "unlimited-holofoil": 817.16
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:20.255Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "sv03.5-198": {
+  "name": "Venusaur ex",
+  "set_name": "151",
+  "variants": {
+   "holofoil": 86.15
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:32.866Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "sv03.5-199": {
+  "name": "Charizard ex",
+  "set_name": "151",
+  "variants": {
+   "holofoil": 279.99
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:32.866Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "swsh7-214": {
+  "name": "Umbreon VMAX",
+  "set_name": "Evolving Skies",
+  "variants": {
+   "holofoil": 79.37
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:31.664Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "swsh7-215": {
+  "name": "Umbreon VMAX",
+  "set_name": "Evolving Skies",
+  "variants": {
+   "holofoil": 2149.1
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:31.664Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "swsh7-95": {
+  "name": "Umbreon VMAX",
+  "set_name": "Evolving Skies",
+  "variants": {
+   "holofoil": 26.53
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:31.664Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "xy4-56": {
+  "name": "Purrloin",
+  "set_name": "Phantom Forces",
+  "variants": {
+   "normal": 0.21,
+   "reverse-holofoil": 0.7
+  },
+  "currency": "USD",
+  "updated": "2026-11-24T22:16:27.534Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "30th-155": {
+  "name": "Jirachi ex",
+  "set_name": "30th Celebration",
+  "variants": {
+   "holofoil": 27.97
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:36.318Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "base1-3": {
+  "name": "Chansey",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 50.57
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:20.159Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "me02.5-269": {
+  "name": "Mega Gengar ex",
+  "set_name": "Ascended Heroes",
+  "variants": {
+   "holofoil": 29.41
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:35.959Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "svp-85": {
+  "name": "Pikachu with Grey Felt Hat",
+  "set_name": "SVP Black Star Promos",
+  "variants": {
+   "normal": 923.05
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:34.190Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "xyp-121": {
+  "name": "Charizard EX",
+  "set_name": "XY Black Star Promos",
+  "variants": {
+   "holofoil": 200.56
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:28.011Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "sv10-231": {
+  "name": "Team Rocket's Mewtwo ex",
+  "set_name": "Destined Rivals",
+  "variants": {
+   "holofoil": 276.14
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:35.408Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "me02-56": {
+  "name": "Mega Gengar ex",
+  "set_name": "Phantasmal Flames",
+  "variants": {
+   "holofoil": 1.53
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:35.859Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "gym1-14": {
+  "name": "Sabrina's Gengar",
+  "set_name": "Gym Heroes",
+  "variants": {
+   "1st-edition-holofoil": 1083,
+   "unlimited-holofoil": 592.99
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:20.715Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "sv08-231": {
+  "name": "Drasna",
+  "set_name": "Surging Sparks",
+  "variants": {
+   "holofoil": 0.83
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:35.131Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "svp-085": {
+  "name": "Pikachu with Grey Felt Hat",
+  "set_name": "SVP Black Star Promos",
+  "variants": {
+   "normal": 923.05
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:34.190Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "xy1-121": {
+  "name": "Muscle Band",
+  "set_name": "XY",
+  "variants": {
+   "normal": 5.1,
+   "reverse-holofoil": 4.92
+  },
+  "currency": "USD",
+  "updated": "2026-11-25T22:16:28.289Z",
+  "source": "tcgdex/tcgplayer"
+ },
+ "_meta": {
+  "source": "TCGdex (TCGplayer market prices)",
+  "fetched": "2026-11-26"
+ }
+}

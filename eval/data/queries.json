@@ -1,0 +1,1816 @@
+[
+ {
+  "id": "S01",
+  "split": "dev",
+  "category": "simple",
+  "text": "Base Set Charizard under $400",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base"
+   ],
+   "budget": 400,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV009",
+    "EV040",
+    "EV083"
+   ],
+   "valid": [
+    "EV005",
+    "EV009",
+    "EV021",
+    "EV040",
+    "EV066",
+    "EV083"
+   ],
+   "bait_traps": [
+    "EV002",
+    "EV024"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV009": 0.97,
+    "EV083": 0.9316,
+    "EV040": 0.8912,
+    "EV005": 0.8629,
+    "EV066": 0.5681
+   }
+  }
+ },
+ {
+  "id": "S02",
+  "split": "test",
+  "category": "simple",
+  "text": "Looking for a Blastoise from Base Set, budget $150",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "blastoise_base"
+   ],
+   "budget": 150,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV016",
+    "EV052",
+    "EV064",
+    "EV081"
+   ],
+   "valid": [
+    "EV016",
+    "EV052",
+    "EV064",
+    "EV078",
+    "EV081",
+    "EV095"
+   ],
+   "bait_traps": [
+    "EV034",
+    "EV080",
+    "EV100"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV052": 0.9572,
+    "EV016": 0.9387,
+    "EV081": 0.9361,
+    "EV064": 0.8849,
+    "EV095": 0.5146
+   }
+  }
+ },
+ {
+  "id": "S03",
+  "split": "dev",
+  "category": "simple",
+  "text": "Venusaur base set holo under $110",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "venusaur_base"
+   ],
+   "budget": 110,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV014",
+    "EV046",
+    "EV094"
+   ],
+   "valid": [
+    "EV013",
+    "EV014",
+    "EV046",
+    "EV049",
+    "EV059",
+    "EV094"
+   ],
+   "bait_traps": [
+    "EV025",
+    "EV044",
+    "EV073"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV046": 0.9835,
+    "EV094": 0.962,
+    "EV014": 0.9351,
+    "EV049": 0.88,
+    "EV059": 0.5344
+   }
+  }
+ },
+ {
+  "id": "S04",
+  "split": "test",
+  "category": "simple",
+  "text": "Base Set Mewtwo under $50",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mewtwo_base"
+   ],
+   "budget": 50,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV043",
+    "EV084"
+   ],
+   "valid": [
+    "EV001",
+    "EV026",
+    "EV035",
+    "EV041",
+    "EV043",
+    "EV071",
+    "EV084"
+   ],
+   "bait_traps": [
+    "EV062",
+    "EV063",
+    "EV079"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV043": 0.9945,
+    "EV084": 0.9368,
+    "EV035": 0.8775,
+    "EV001": 0.5731,
+    "EV026": 0.5682
+   }
+  }
+ },
+ {
+  "id": "S05",
+  "split": "dev",
+  "category": "simple",
+  "text": "Pikachu from Base Set, under $15",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_base"
+   ],
+   "budget": 15,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV017",
+    "EV099"
+   ],
+   "valid": [
+    "EV006",
+    "EV017",
+    "EV039",
+    "EV056",
+    "EV065",
+    "EV068",
+    "EV099"
+   ],
+   "bait_traps": [
+    "EV022",
+    "EV070"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV017": 1.0,
+    "EV099": 0.9437,
+    "EV039": 0.91,
+    "EV065": 0.9062,
+    "EV056": 0.88
+   }
+  }
+ },
+ {
+  "id": "S06",
+  "split": "test",
+  "category": "simple",
+  "text": "Charizard ex from 151 under $125",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_ex_151"
+   ],
+   "budget": 125,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV072",
+    "EV077",
+    "EV090"
+   ],
+   "valid": [
+    "EV020",
+    "EV027",
+    "EV030",
+    "EV047",
+    "EV072",
+    "EV077",
+    "EV090"
+   ],
+   "bait_traps": [
+    "EV029",
+    "EV054",
+    "EV085"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV077": 0.9506,
+    "EV072": 0.9366,
+    "EV090": 0.8984,
+    "EV030": 0.7067,
+    "EV047": 0.6083
+   }
+  }
+ },
+ {
+  "id": "S07",
+  "split": "dev",
+  "category": "simple",
+  "text": "Mew ex 151 special illustration under $65",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mew_ex_151"
+   ],
+   "budget": 65,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV048",
+    "EV060"
+   ],
+   "valid": [
+    "EV004",
+    "EV010",
+    "EV031",
+    "EV048",
+    "EV055",
+    "EV060",
+    "EV087"
+   ],
+   "bait_traps": [
+    "EV058",
+    "EV097",
+    "EV098"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV048": 1.0,
+    "EV060": 0.9351,
+    "EV087": 0.9127,
+    "EV031": 0.88,
+    "EV055": 0.5778
+   }
+  }
+ },
+ {
+  "id": "S08",
+  "split": "test",
+  "category": "simple",
+  "text": "Moonbreon, the Evolving Skies Umbreon VMAX alt art, under $1,300",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "umbreon_es"
+   ],
+   "budget": 1300,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV003",
+    "EV088",
+    "EV089",
+    "EV092"
+   ],
+   "valid": [
+    "EV003",
+    "EV033",
+    "EV082",
+    "EV088",
+    "EV089",
+    "EV091",
+    "EV092"
+   ],
+   "bait_traps": [
+    "EV042",
+    "EV086",
+    "EV093"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV003": 0.9509,
+    "EV088": 0.9358,
+    "EV092": 0.9234,
+    "EV089": 0.89,
+    "EV082": 0.5708
+   }
+  }
+ },
+ {
+  "id": "S09",
+  "split": "dev",
+  "category": "simple",
+  "text": "Lugia V alt art from Silver Tempest under $120",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "lugia_st"
+   ],
+   "budget": 120,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV012",
+    "EV037",
+    "EV038"
+   ],
+   "valid": [
+    "EV012",
+    "EV032",
+    "EV037",
+    "EV038",
+    "EV050",
+    "EV053",
+    "EV096"
+   ],
+   "bait_traps": [
+    "EV051",
+    "EV057",
+    "EV075"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV038": 1.0,
+    "EV037": 0.97,
+    "EV012": 0.9382,
+    "EV096": 0.7085,
+    "EV050": 0.569
+   }
+  }
+ },
+ {
+  "id": "S10",
+  "split": "test",
+  "category": "simple",
+  "text": "Pikachu ex from Surging Sparks, the special illustration, under $330",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_ex_ss"
+   ],
+   "budget": 330,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV023",
+    "EV036",
+    "EV074"
+   ],
+   "valid": [
+    "EV007",
+    "EV011",
+    "EV015",
+    "EV018",
+    "EV023",
+    "EV036",
+    "EV074"
+   ],
+   "bait_traps": [
+    "EV019",
+    "EV028",
+    "EV067"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV036": 1.0,
+    "EV074": 0.97,
+    "EV023": 0.9369,
+    "EV007": 0.7062,
+    "EV015": 0.5562
+   }
+  }
+ },
+ {
+  "id": "S11",
+  "split": "test",
+  "category": "simple",
+  "text": "Pikachu ex SIR from Surging Sparks under $150",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_ex_ss"
+   ],
+   "budget": 150,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "nothing_fits",
+   "acceptable": [],
+   "valid": [],
+   "bait_traps": [
+    "EV067"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {}
+  }
+ },
+ {
+  "id": "S12",
+  "split": "test",
+  "category": "simple",
+  "text": "Mew ex from 151 under $25",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mew_ex_151"
+   ],
+   "budget": 25,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "nothing_fits",
+   "acceptable": [],
+   "valid": [],
+   "bait_traps": [],
+   "decoy_only": false,
+   "oracle_scores": {}
+  }
+ },
+ {
+  "id": "S13",
+  "split": "dev",
+  "category": "simple",
+  "text": "Mewtwo base set holo, I can spend $60",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mewtwo_base"
+   ],
+   "budget": 60,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV043",
+    "EV084"
+   ],
+   "valid": [
+    "EV001",
+    "EV026",
+    "EV035",
+    "EV041",
+    "EV043",
+    "EV071",
+    "EV084"
+   ],
+   "bait_traps": [
+    "EV062",
+    "EV063",
+    "EV079"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV043": 0.9945,
+    "EV084": 0.9368,
+    "EV035": 0.8775,
+    "EV001": 0.5731,
+    "EV026": 0.5682
+   }
+  }
+ },
+ {
+  "id": "S14",
+  "split": "test",
+  "category": "simple",
+  "text": "Charizard ex 199/165 under $100",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_ex_151"
+   ],
+   "budget": 100,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV072",
+    "EV077"
+   ],
+   "valid": [
+    "EV030",
+    "EV047",
+    "EV072",
+    "EV077"
+   ],
+   "bait_traps": [
+    "EV054",
+    "EV085"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV077": 0.9506,
+    "EV072": 0.9366,
+    "EV030": 0.7067,
+    "EV047": 0.6083
+   }
+  }
+ },
+ {
+  "id": "S15",
+  "split": "test",
+  "category": "simple",
+  "text": "Lugia V 186/195 under $100",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "lugia_st"
+   ],
+   "budget": 100,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV012",
+    "EV037",
+    "EV038"
+   ],
+   "valid": [
+    "EV012",
+    "EV032",
+    "EV037",
+    "EV038",
+    "EV096"
+   ],
+   "bait_traps": [
+    "EV051",
+    "EV057",
+    "EV075"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV038": 1.0,
+    "EV037": 0.97,
+    "EV012": 0.9382,
+    "EV096": 0.7085,
+    "EV032": 0.5158
+   }
+  }
+ },
+ {
+  "id": "C01",
+  "split": "dev",
+  "category": "complex",
+  "text": "I'm a collector and condition matters most: Base Set Charizard under $450",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base"
+   ],
+   "budget": 450,
+   "min_condition": null,
+   "persona": "serious_collector"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV083"
+   ],
+   "valid": [
+    "EV005",
+    "EV009",
+    "EV021",
+    "EV040",
+    "EV066",
+    "EV076",
+    "EV083"
+   ],
+   "bait_traps": [
+    "EV002",
+    "EV024",
+    "EV045"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV083": 0.9544,
+    "EV066": 0.8704,
+    "EV076": 0.8582,
+    "EV009": 0.85,
+    "EV021": 0.6723
+   }
+  }
+ },
+ {
+  "id": "C02",
+  "split": "test",
+  "category": "complex",
+  "text": "Cheapest Base Set Charizard you can find for my son, under $300",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base"
+   ],
+   "budget": 300,
+   "min_condition": null,
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV009"
+   ],
+   "valid": [
+    "EV005",
+    "EV009",
+    "EV040"
+   ],
+   "bait_traps": [
+    "EV002",
+    "EV024"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV009": 0.98,
+    "EV040": 0.8525,
+    "EV005": 0.6003
+   }
+  }
+ },
+ {
+  "id": "C03",
+  "split": "test",
+  "category": "complex",
+  "text": "Base Set Blastoise, lightly played or better, under $100",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "blastoise_base"
+   ],
+   "budget": 100,
+   "min_condition": "LP",
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV052"
+   ],
+   "valid": [
+    "EV052"
+   ],
+   "bait_traps": [
+    "EV080"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV052": 0.9572
+   }
+  }
+ },
+ {
+  "id": "C04",
+  "split": "dev",
+  "category": "complex",
+  "text": "For my collection, near mint only: Venusaur base set under $130",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "venusaur_base"
+   ],
+   "budget": 130,
+   "min_condition": "NM",
+   "persona": "serious_collector"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV014",
+    "EV046"
+   ],
+   "valid": [
+    "EV008",
+    "EV014",
+    "EV046"
+   ],
+   "bait_traps": [
+    "EV025",
+    "EV073"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV046": 0.989,
+    "EV014": 0.9567,
+    "EV008": 0.8538
+   }
+  }
+ },
+ {
+  "id": "C05",
+  "split": "test",
+  "category": "complex",
+  "text": "Cheapest near mint Mewtwo from Base Set",
+  "clarify_answer": "Up to $60",
+  "truth": {
+   "printings": [
+    "mewtwo_base"
+   ],
+   "budget": 60,
+   "min_condition": "NM",
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV043"
+   ],
+   "valid": [
+    "EV026",
+    "EV043",
+    "EV084"
+   ],
+   "bait_traps": [
+    "EV062",
+    "EV063",
+    "EV079"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV043": 0.9743,
+    "EV084": 0.7049,
+    "EV026": 0.5184
+   }
+  }
+ },
+ {
+  "id": "C06",
+  "split": "dev",
+  "category": "complex",
+  "text": "Pikachu base set for my daughter, cheapest one please, under $10",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_base"
+   ],
+   "budget": 10,
+   "min_condition": null,
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV017",
+    "EV039"
+   ],
+   "valid": [
+    "EV006",
+    "EV017",
+    "EV039",
+    "EV056",
+    "EV068",
+    "EV099"
+   ],
+   "bait_traps": [
+    "EV022",
+    "EV070"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV017": 1.0,
+    "EV039": 0.94,
+    "EV068": 0.8425,
+    "EV099": 0.7375,
+    "EV056": 0.56
+   }
+  }
+ },
+ {
+  "id": "C07",
+  "split": "test",
+  "category": "complex",
+  "text": "Charizard ex 151 SIR, near mint only, cheapest you can find, under $110",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_ex_151"
+   ],
+   "budget": 110,
+   "min_condition": "NM",
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV047",
+    "EV072"
+   ],
+   "valid": [
+    "EV027",
+    "EV047",
+    "EV072"
+   ],
+   "bait_traps": [
+    "EV029",
+    "EV054",
+    "EV085"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV047": 0.7056,
+    "EV072": 0.7039,
+    "EV027": 0.5458
+   }
+  }
+ },
+ {
+  "id": "C08",
+  "split": "dev",
+  "category": "complex",
+  "text": "I've been scammed before, I want a safe local deal: Mew ex 151 under $65",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mew_ex_151"
+   ],
+   "budget": 65,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV048",
+    "EV060"
+   ],
+   "valid": [
+    "EV004",
+    "EV010",
+    "EV031",
+    "EV048",
+    "EV055",
+    "EV060",
+    "EV087"
+   ],
+   "bait_traps": [
+    "EV058",
+    "EV097",
+    "EV098"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV048": 1.0,
+    "EV060": 0.9351,
+    "EV087": 0.9127,
+    "EV031": 0.88,
+    "EV055": 0.5778
+   }
+  }
+ },
+ {
+  "id": "C09",
+  "split": "test",
+  "category": "complex",
+  "text": "Umbreon VMAX alt art from Evolving Skies, lightly played is fine, under $1,000",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "umbreon_es"
+   ],
+   "budget": 1000,
+   "min_condition": "LP",
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV003",
+    "EV089"
+   ],
+   "valid": [
+    "EV003",
+    "EV089"
+   ],
+   "bait_traps": [
+    "EV042",
+    "EV093"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV003": 0.9509,
+    "EV089": 0.89
+   }
+  }
+ },
+ {
+  "id": "C10",
+  "split": "dev",
+  "category": "complex",
+  "text": "Lugia V alt art, serious collector here, condition matters, under $115",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "lugia_st"
+   ],
+   "budget": 115,
+   "min_condition": null,
+   "persona": "serious_collector"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV012",
+    "EV038"
+   ],
+   "valid": [
+    "EV012",
+    "EV032",
+    "EV037",
+    "EV038",
+    "EV050",
+    "EV053",
+    "EV096"
+   ],
+   "bait_traps": [
+    "EV051",
+    "EV057",
+    "EV075"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV038": 1.0,
+    "EV012": 0.9588,
+    "EV050": 0.871,
+    "EV053": 0.8603,
+    "EV037": 0.85
+   }
+  }
+ },
+ {
+  "id": "C11",
+  "split": "test",
+  "category": "complex",
+  "text": "Pikachu ex Surging Sparks SIR for my nephew, as cheap as possible, under $250",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_ex_ss"
+   ],
+   "budget": 250,
+   "min_condition": null,
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV036",
+    "EV074"
+   ],
+   "valid": [
+    "EV036",
+    "EV074"
+   ],
+   "bait_traps": [
+    "EV019",
+    "EV067"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV036": 1.0,
+    "EV074": 0.98
+   }
+  }
+ },
+ {
+  "id": "C12",
+  "split": "test",
+  "category": "complex",
+  "text": "Near mint Base Set Charizard under $300",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base"
+   ],
+   "budget": 300,
+   "min_condition": "NM",
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "nothing_fits",
+   "acceptable": [],
+   "valid": [],
+   "bait_traps": [
+    "EV002",
+    "EV024"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {}
+  }
+ },
+ {
+  "id": "C13",
+  "split": "test",
+  "category": "complex",
+  "text": "Venusaur base set, any condition, for my kid's binder, the cheapest one",
+  "clarify_answer": "Under $50",
+  "truth": {
+   "printings": [
+    "venusaur_base"
+   ],
+   "budget": 50,
+   "min_condition": null,
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV059"
+   ],
+   "valid": [
+    "EV059"
+   ],
+   "bait_traps": [
+    "EV025"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV059": 0.7207
+   }
+  }
+ },
+ {
+  "id": "C14",
+  "split": "dev",
+  "category": "complex",
+  "text": "Mewtwo base set holo, moderately played is ok, under $35",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mewtwo_base"
+   ],
+   "budget": 35,
+   "min_condition": "MP",
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV043"
+   ],
+   "valid": [
+    "EV001",
+    "EV035",
+    "EV043"
+   ],
+   "bait_traps": [
+    "EV062"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV043": 0.9945,
+    "EV035": 0.8775,
+    "EV001": 0.5731
+   }
+  }
+ },
+ {
+  "id": "C15",
+  "split": "test",
+  "category": "complex",
+  "text": "Pikachu base set 58/102, near mint, under $13",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_base"
+   ],
+   "budget": 13,
+   "min_condition": "NM",
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV017",
+    "EV099"
+   ],
+   "valid": [
+    "EV017",
+    "EV065",
+    "EV099"
+   ],
+   "bait_traps": [
+    "EV022",
+    "EV070"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV017": 1.0,
+    "EV099": 0.9437,
+    "EV065": 0.9062
+   }
+  }
+ },
+ {
+  "id": "C16",
+  "split": "dev",
+  "category": "complex",
+  "text": "Charizard ex 151 for my collection, near mint, under $125",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_ex_151"
+   ],
+   "budget": 125,
+   "min_condition": "NM",
+   "persona": "serious_collector"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV047",
+    "EV072",
+    "EV090"
+   ],
+   "valid": [
+    "EV020",
+    "EV027",
+    "EV047",
+    "EV072",
+    "EV090"
+   ],
+   "bait_traps": [
+    "EV029",
+    "EV054",
+    "EV085"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV072": 0.9577,
+    "EV090": 0.9323,
+    "EV047": 0.8972,
+    "EV027": 0.8744,
+    "EV020": 0.8604
+   }
+  }
+ },
+ {
+  "id": "C17",
+  "split": "test",
+  "category": "complex",
+  "text": "Mew ex SIR from 151, near mint, as cheap as possible",
+  "clarify_answer": "$60 max",
+  "truth": {
+   "printings": [
+    "mew_ex_151"
+   ],
+   "budget": 60,
+   "min_condition": "NM",
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV048"
+   ],
+   "valid": [
+    "EV004",
+    "EV048",
+    "EV060",
+    "EV087"
+   ],
+   "bait_traps": [
+    "EV058",
+    "EV097",
+    "EV098"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV048": 1.0,
+    "EV060": 0.6971,
+    "EV087": 0.5927,
+    "EV004": 0.4927
+   }
+  }
+ },
+ {
+  "id": "C18",
+  "split": "test",
+  "category": "complex",
+  "text": "Umbreon VMAX 215/203 near mint, I'm a collector, budget $1,300",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "umbreon_es"
+   ],
+   "budget": 1300,
+   "min_condition": "NM",
+   "persona": "serious_collector"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV088"
+   ],
+   "valid": [
+    "EV033",
+    "EV082",
+    "EV088"
+   ],
+   "bait_traps": [
+    "EV042",
+    "EV086",
+    "EV093"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV088": 0.9572,
+    "EV082": 0.8722,
+    "EV033": 0.8577
+   }
+  }
+ },
+ {
+  "id": "C19",
+  "split": "test",
+  "category": "complex",
+  "text": "Lugia V Silver Tempest alt art, lightly played is fine, cheapest please, under $80",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "lugia_st"
+   ],
+   "budget": 80,
+   "min_condition": "LP",
+   "persona": "budget_parent"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV037",
+    "EV038"
+   ],
+   "valid": [
+    "EV037",
+    "EV038"
+   ],
+   "bait_traps": [
+    "EV057",
+    "EV075"
+   ],
+   "decoy_only": true,
+   "oracle_scores": {
+    "EV038": 1.0,
+    "EV037": 0.98
+   }
+  }
+ },
+ {
+  "id": "C20",
+  "split": "dev",
+  "category": "complex",
+  "text": "Pikachu ex 238/191, near mint, I'm worried about scams, under $330",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_ex_ss"
+   ],
+   "budget": 330,
+   "min_condition": "NM",
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV023",
+    "EV036"
+   ],
+   "valid": [
+    "EV015",
+    "EV018",
+    "EV023",
+    "EV036"
+   ],
+   "bait_traps": [
+    "EV019",
+    "EV028",
+    "EV067"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV036": 1.0,
+    "EV023": 0.9369,
+    "EV015": 0.5562,
+    "EV018": 0.3905
+   }
+  }
+ },
+ {
+  "id": "C21",
+  "split": "dev",
+  "category": "complex",
+  "text": "Any Charizard is fine, Base Set or the 151 ex, under $130",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base",
+    "charizard_ex_151"
+   ],
+   "budget": 130,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "any_printing": true
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV072",
+    "EV077",
+    "EV090"
+   ],
+   "valid": [
+    "EV020",
+    "EV027",
+    "EV030",
+    "EV047",
+    "EV072",
+    "EV077",
+    "EV090"
+   ],
+   "bait_traps": [
+    "EV029",
+    "EV054",
+    "EV085"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV077": 0.9506,
+    "EV072": 0.9366,
+    "EV090": 0.8984,
+    "EV030": 0.7067,
+    "EV047": 0.6083
+   }
+  }
+ },
+ {
+  "id": "C22",
+  "split": "test",
+  "category": "complex",
+  "text": "Charizard from Base Set, the holo, not 1st edition, under $380",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base"
+   ],
+   "budget": 380,
+   "min_condition": null,
+   "persona": "cautious_buyer"
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV009",
+    "EV040",
+    "EV083"
+   ],
+   "valid": [
+    "EV005",
+    "EV009",
+    "EV021",
+    "EV040",
+    "EV083"
+   ],
+   "bait_traps": [
+    "EV002",
+    "EV024"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV009": 0.97,
+    "EV083": 0.9316,
+    "EV040": 0.8912,
+    "EV005": 0.8629,
+    "EV021": 0.3471
+   }
+  }
+ },
+ {
+  "id": "C23",
+  "split": "dev",
+  "category": "complex",
+  "text": "I want a Charizard under $200",
+  "clarify_answer": "The Charizard ex from 151",
+  "truth": {
+   "printings": [
+    "charizard_ex_151"
+   ],
+   "budget": 200,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "needs_clarify": true
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV072",
+    "EV077",
+    "EV090"
+   ],
+   "valid": [
+    "EV020",
+    "EV027",
+    "EV030",
+    "EV047",
+    "EV072",
+    "EV077",
+    "EV090"
+   ],
+   "bait_traps": [
+    "EV029",
+    "EV054",
+    "EV085"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV077": 0.9506,
+    "EV072": 0.9366,
+    "EV090": 0.8984,
+    "EV030": 0.7067,
+    "EV047": 0.6083
+   }
+  }
+ },
+ {
+  "id": "C24",
+  "split": "test",
+  "category": "complex",
+  "text": "Looking for a Pikachu, budget $15",
+  "clarify_answer": "The Base Set one",
+  "truth": {
+   "printings": [
+    "pikachu_base"
+   ],
+   "budget": 15,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "needs_clarify": true
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV017",
+    "EV099"
+   ],
+   "valid": [
+    "EV006",
+    "EV017",
+    "EV039",
+    "EV056",
+    "EV065",
+    "EV068",
+    "EV099"
+   ],
+   "bait_traps": [
+    "EV022",
+    "EV070"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV017": 1.0,
+    "EV099": 0.9437,
+    "EV039": 0.91,
+    "EV065": 0.9062,
+    "EV056": 0.88
+   }
+  }
+ },
+ {
+  "id": "C25",
+  "split": "dev",
+  "category": "complex",
+  "text": "Lugia V alt art from Silver Tempest",
+  "clarify_answer": "About $100",
+  "truth": {
+   "printings": [
+    "lugia_st"
+   ],
+   "budget": 100,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "needs_clarify": true
+  },
+  "key": {
+   "expect": "recommend",
+   "acceptable": [
+    "EV012",
+    "EV037",
+    "EV038"
+   ],
+   "valid": [
+    "EV012",
+    "EV032",
+    "EV037",
+    "EV038",
+    "EV096"
+   ],
+   "bait_traps": [
+    "EV051",
+    "EV057",
+    "EV075"
+   ],
+   "decoy_only": false,
+   "oracle_scores": {
+    "EV038": 1.0,
+    "EV037": 0.97,
+    "EV012": 0.9382,
+    "EV096": 0.7085,
+    "EV032": 0.5158
+   }
+  }
+ },
+ {
+  "id": "P01",
+  "split": "dev",
+  "category": "consultative",
+  "text": "Is $300 fair for a lightly played Base Set Charizard?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_base"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "LP",
+   "asked": 300
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 357.0,
+   "market_nm": 420.0,
+   "verdict": "fair"
+  }
+ },
+ {
+  "id": "P02",
+  "split": "test",
+  "category": "consultative",
+  "text": "Someone wants $200 for a near mint Base Set Blastoise, is that a good price?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "blastoise_base"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "NM",
+   "asked": 200
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 160.0,
+   "market_nm": 160.0,
+   "verdict": "on the high side"
+  }
+ },
+ {
+  "id": "P03",
+  "split": "dev",
+  "category": "consultative",
+  "text": "Is $40 too cheap for a near mint Base Set Mewtwo?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mewtwo_base"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "NM",
+   "asked": 40
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 50.0,
+   "market_nm": 50.0,
+   "verdict": "fair"
+  }
+ },
+ {
+  "id": "P04",
+  "split": "test",
+  "category": "consultative",
+  "text": "Is $45 fair for a near mint Charizard ex from 151?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "charizard_ex_151"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "NM",
+   "asked": 45
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 115.0,
+   "market_nm": 115.0,
+   "verdict": "suspiciously low"
+  }
+ },
+ {
+  "id": "P05",
+  "split": "dev",
+  "category": "consultative",
+  "text": "What's a fair price for a moderately played Base Set Venusaur?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "venusaur_base"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "MP"
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 84.0,
+   "market_nm": 120.0
+  }
+ },
+ {
+  "id": "P06",
+  "split": "test",
+  "category": "consultative",
+  "text": "Is $1,000 fair for a near mint Moonbreon, the Evolving Skies Umbreon VMAX alt art?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "umbreon_es"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "NM",
+   "asked": 1000
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 1250.0,
+   "market_nm": 1250.0,
+   "verdict": "fair"
+  }
+ },
+ {
+  "id": "P07",
+  "split": "dev",
+  "category": "consultative",
+  "text": "Is $8 a fair price for a lightly played Base Set Pikachu?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_base"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "LP",
+   "asked": 8
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 10.2,
+   "market_nm": 12.0,
+   "verdict": "fair"
+  }
+ },
+ {
+  "id": "P08",
+  "split": "test",
+  "category": "consultative",
+  "text": "Is $130 fair for a near mint Lugia V alt art from Silver Tempest?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "lugia_st"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "NM",
+   "asked": 130
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 110.0,
+   "market_nm": 110.0,
+   "verdict": "on the high side"
+  }
+ },
+ {
+  "id": "P09",
+  "split": "dev",
+  "category": "consultative",
+  "text": "Is $35 fair for a near mint Mew ex from 151?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "mew_ex_151"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "NM",
+   "asked": 35
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 60.0,
+   "market_nm": 60.0,
+   "verdict": "suspiciously low"
+  }
+ },
+ {
+  "id": "P10",
+  "split": "test",
+  "category": "consultative",
+  "text": "Is $280 a fair price for a lightly played Pikachu ex from Surging Sparks?",
+  "clarify_answer": null,
+  "truth": {
+   "printings": [
+    "pikachu_ex_ss"
+   ],
+   "budget": null,
+   "min_condition": null,
+   "persona": "cautious_buyer",
+   "condition": "LP",
+   "asked": 280
+  },
+  "key": {
+   "expect": "price_check",
+   "market_for_condition": 272.0,
+   "market_nm": 320.0,
+   "verdict": "fair"
+  }
+ }
+]
