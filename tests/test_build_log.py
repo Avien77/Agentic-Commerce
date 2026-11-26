@@ -10,6 +10,8 @@ PATTERNS = [
     "data/samples/*.json",
     "data/red_flags.md",
     "config.yaml",
+    ".python-version",
+    "data/raw/.gitkeep",
     "pyproject.toml",
     "uv.lock",
     ".env.example",

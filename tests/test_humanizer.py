@@ -73,3 +73,39 @@ def test_nothing_fits_explains_budget_gap(cfg):
              "ranked_listings": [], "rejected_listings": [over], "closest_rejected": over}  # fmt: skip
     facts = build_facts(state, cfg)
     assert facts["status"] == "nothing_fits" and facts["why"] == "it is $5.00 over your budget"
+
+
+def test_template_alternatives_give_a_new_reason_and_their_warning():
+    from src.agents.humanizer import template_reply
+
+    facts = {
+        "status": "recommend",
+        "top": {"card": "Charizard", "set": "Base Set", "condition": "near mint",
+                "total": "$450.00", "shipping": "local pickup", "why": ["near mint"]},
+        "alternatives": [
+            {"card": "Charizard", "condition": "lightly played", "total": "$450.00",
+             "why": ["lightly played", "5 photos"],
+             "warning": "Price is 53% of the market price for its condition."},
+            {"card": "Charizard", "condition": "moderately played", "total": "$400.00"},
+        ],
+    }  # fmt: skip
+    reply = template_reply(facts)
+    assert reply.startswith(
+        "Your best bet is the Charizard from Base Set, near mint, for $450.00 with local pickup."
+    )  # "near mint" is the only reason: not repeated
+    assert ("Also worth a look: the Charizard (lightly played) at $450.00, 5 photos, but price is "
+            "53% of the market price for its condition; or the Charizard (moderately played) at "
+            "$400.00.") in reply  # fmt: skip
+
+
+def test_a_price_check_without_an_asked_price_names_the_card():
+    """Found by the benchmark (P05): "What's a fair price for a moderately played Base Set
+    Venusaur?" got "A moderately played one usually goes for...", which failed the number
+    check's card-name rule, so the turn crashed instead of answering."""
+    from src.agents.humanizer import number_check, template_reply
+
+    facts = {"status": "price_check", "card": "Venusaur", "set": "Base Set",
+             "condition": "moderately played", "market_for_condition": "$84.00", "notes": []}  # fmt: skip
+    reply = template_reply(facts)
+    assert reply == "A moderately played Venusaur usually goes for about $84.00."
+    assert number_check(reply, [84.0], ["Venusaur"]) == []

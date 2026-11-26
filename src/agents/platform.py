@@ -3,14 +3,18 @@
 """Platform Agent (Orchestrator): CLARIFY logic, policy gates, and bounded-loop routing."""
 
 import json
+import re
 import time
 from collections.abc import Callable
 from typing import Any, Literal
 
+from pydantic import BaseModel
+
+from src.agents.humanizer import fmt_usd
 from src.config import load_config
 from src.llm import LLM, LLMError, make_llm, offline_handler
-from src.pipeline import between
-from src.schemas import ParsedQuery
+from src.pipeline import between, guess_card_name, set_display_name
+from src.schemas import CONDITION_WORDS, ParsedQuery
 from src.state import AgentState
 
 PrintingsFn = Callable[[ParsedQuery], list[str]]
@@ -127,8 +131,12 @@ def route_after_intent(
     state: AgentState,
     max_clarify: int = 1,
     printings_fn: PrintingsFn | None = None,
-) -> Literal["CLARIFY", "SEARCHING"]:
-    """Route to CLARIFY if request is unclear and clarify_count < max_clarify; else SEARCHING."""
+    max_confirm: int = 2,
+) -> Literal["CLARIFY", "CONFIRM", "SEARCHING"]:
+    """CLARIFY if the request is unclear and clarify_count < max_clarify. Otherwise CONFIRM
+    when the caller asked for a read-back (`confirm_first`, set by ChatSession) and it hasn't
+    been read back `max_confirm` times yet; price checks are answered without one. Else
+    SEARCHING."""
     parsed = state.get("parsed_query")
     printings = printings_fn(parsed) if (printings_fn and parsed and parsed.card_name) else None
     reason = needs_clarification(
@@ -137,7 +145,21 @@ def route_after_intent(
         max_clarify=max_clarify,
         printings=printings,
     )
-    return "CLARIFY" if reason is not None else "SEARCHING"
+    if reason is not None:
+        return "CLARIFY"
+    if (
+        state.get("confirm_first")
+        and parsed is not None
+        and not parsed.is_consultative
+        and int(state.get("confirm_count", 0)) < max_confirm
+    ):
+        return "CONFIRM"
+    return "SEARCHING"
+
+
+def route_start(state: AgentState) -> Literal["INTENT", "SEARCHING"]:
+    """A request the buyer just confirmed goes straight to SEARCHING with its parsed query."""
+    return "SEARCHING" if state.get("confirmed") and state.get("parsed_query") else "INTENT"
 
 
 def route_after_evaluating(
@@ -171,8 +193,144 @@ def route_after_responding(
     return "DONE"
 
 
+def describe_request(q: ParsedQuery, config: dict[str, Any]) -> str:
+    """The request in words, e.g. "a Charizard from Base Set, holo, with a budget of $400.00,
+    and condition matters most to you". Built by code from the parsed query, so the numbers
+    read back are exactly the ones the search will use."""
+    card = q.card_name or "card"
+    text = f"{'an' if card[:1].lower() in 'aeiou' else 'a'} {card}"
+    set_name = set_display_name(q.set_code, config) if q.set_code and not q.any_printing else None
+    if set_name:
+        text += f" from {set_name}"
+    elif q.any_printing:
+        text += ", any printing"
+    variant = {"holo": "holo", "reverse": "reverse holo", "1st edition": "1st edition",
+               "normal": "non-holo"}.get(q.variant or "")  # fmt: skip
+    if variant:
+        text += f", {variant}"
+    if q.excluded_variants:
+        text += ", but not " + " or ".join(
+            "reverse holo" if v == "reverse" else v for v in q.excluded_variants
+        )
+    if q.min_condition:
+        text += f", in at least {CONDITION_WORDS[q.min_condition]} condition"
+    if q.budget:
+        usual = "budget" in q.filled_from_memory
+        text += f", with {'your usual budget' if usual else 'a budget'} of {fmt_usd(q.budget)}"
+    else:
+        text += ", with no set budget"
+    if "persona" not in q.filled_from_memory:
+        text += {
+            "serious_collector": ", and condition matters most to you",
+            "budget_parent": ", and you want the best price",
+        }.get(q.persona, "")
+    return text
+
+
+def confirm_question(q: ParsedQuery, config: dict[str, Any]) -> str:
+    return f"Okay, so just to confirm: you're looking for {describe_request(q, config)}. Is that right?"
+
+
+def make_confirm_node(
+    config: dict[str, Any] | None = None,
+) -> Callable[[AgentState], dict[str, Any]]:
+    """Build the CONFIRM node: reads the request back (fixed wording, no LLM). The graph then
+    pauses; ChatSession sends the buyer's answer back in."""
+    cfg = config or load_config()
+
+    def confirm_node(state: AgentState) -> dict[str, Any]:
+        t0 = time.perf_counter()
+        parsed = state.get("parsed_query") or ParsedQuery()
+        timings = dict(state.get("stage_timings", {}))
+        timings["CONFIRM"] = round(time.perf_counter() - t0, 4)
+        return {
+            "current_state": "CONFIRM",
+            "confirm_question": confirm_question(parsed, cfg),
+            "confirm_count": int(state.get("confirm_count", 0)) + 1,
+            "stage_timings": timings,
+        }
+
+    return confirm_node
+
+
+class ConfirmReading(BaseModel):
+    confirmed: bool = False
+    correction: str | None = None
+
+
+CONFIRM_SYSTEM = """The assistant read a buyer's Pokemon card request back to them and asked
+whether it is right. Read the buyer's answer.
+- confirmed: true only if they agree and change nothing ("yes", "yep, that's it").
+- correction: what they want changed or added, in their own words ("make it $300", "the 151
+  one", "near mint only"); null if they only said no or only agreed."""
+
+YES_WORDS = (
+    r"(yes|yeah|yep|yup|ya|yea|correct|right|exactly|sure|perfect|ok|okay|sounds good|"
+    r"that'?s (it|right|correct)|you got it|please|thanks|thank you|go ahead|do it)"
+)
+YES = re.compile(rf"^\s*{YES_WORDS}([\s,.!]+{YES_WORDS})*[\s,.!]*$", re.IGNORECASE)
+
+
+def read_confirmation(llm: LLM, question: str, answer: str) -> ConfirmReading:
+    """Did the buyer confirm the read-back? A plain yes is read by code (no LLM call, so no
+    delay); anything else goes to the LLM, which separates "no" from a correction."""
+    if YES.match(answer):
+        return ConfirmReading(confirmed=True)
+    prompt = f"<question>\n{question}\n</question>\n<answer>\n{answer}\n</answer>"
+    try:
+        return llm.json(tag="confirm_answer", system=CONFIRM_SYSTEM, prompt=prompt,
+                        schema=ConfirmReading)  # fmt: skip
+    except LLMError:
+        return ConfirmReading(**offline_confirm_answer("", prompt))
+
+
+REQUEST_WORDS = re.compile(
+    r"\$|\d+\s*(dollars|bucks)|\b(looking for|look for|need|want|find|buy|budget|under)\b",
+    re.IGNORECASE,
+)
+
+
+def looks_like_request(text: str) -> bool:
+    """Whether a reply to "How are you doing today?" already asks for a card."""
+    return bool(guess_card_name(text) or REQUEST_WORDS.search(text))
+
+
+SMALLTALK_SYSTEM = """You are a friendly card-shop assistant. The buyer just answered "How are
+you doing today?". Reply with ONE short, warm sentence (at most 12 words) that reacts to what
+they said. Don't ask a question and don't mention cards."""
+
+
+def smalltalk_reply(llm: LLM, text: str) -> str:
+    """One short line reacting to the buyer's answer, e.g. "Glad to hear it!"."""
+    prompt = f"<answer>\n{text}\n</answer>"
+    try:
+        reply = llm.text(tag="smalltalk", system=SMALLTALK_SYSTEM, prompt=prompt).strip()
+    except LLMError:
+        reply = ""
+    return reply if 0 < len(reply) <= 120 and "?" not in reply else offline_smalltalk("", prompt)
+
+
 @offline_handler("clarify")
 def offline_clarify(_system: str, prompt: str) -> str:
     """Offline mode asks the template question."""
     f = json.loads(between(prompt, "facts"))
     return clarify_template(f["missing"], f.get("card"), f.get("printings") or [])
+
+
+@offline_handler("confirm_answer")
+def offline_confirm_answer(_system: str, prompt: str) -> dict:
+    """Rule-based stand-in: "no" alone is a no; any other answer is a correction."""
+    answer = between(prompt, "answer").strip()
+    if YES.match(answer):
+        return {"confirmed": True, "correction": None}
+    rest = re.sub(r"^\s*(no|nope|nah|not quite|wrong)\b[\s,.!]*", "", answer, flags=re.IGNORECASE)
+    return {"confirmed": False, "correction": rest.strip() or None}
+
+
+@offline_handler("smalltalk")
+def offline_smalltalk(_system: str, prompt: str) -> str:
+    """Rule-based stand-in for the small-talk line."""
+    answer = between(prompt, "answer").lower()
+    if re.search(r"\b(not|bad|tired|sick|rough|meh|stressed|busy)\b", answer):
+        return "Sorry to hear that, let's find you something good."
+    return "Glad to hear it!"

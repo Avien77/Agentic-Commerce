@@ -19,12 +19,15 @@ from src.pipeline import (
     MarketData,
     MarketplaceScraper,
     PriceBook,
+    ReplayScraper,
+    anon_id,
     anonymize,
-    apply_scope_filter,
     between,
-    build_listings,
-    extract_cards,
+    first,
+    identify_listings,
     load_data,
+    real_prices,
+    set_display_name,
 )
 from src.schemas import CONDITION_ORDER, CardListing, EvaluatedListing, ParsedQuery
 from src.state import AgentState
@@ -158,9 +161,11 @@ class FlagReasons(BaseModel):
 
 
 FLAG_SYSTEM = """You explain to a card buyer why a marketplace listing looks risky.
-For each listing, write one short, plain sentence based only on the signals and red-flag
-entries given. Do not include prices or other numbers. Do not accuse the seller of fraud;
-say what looks wrong and why it matters."""
+For each listing, write one short, plain sentence based only on its signals and the red flags
+found in it ("found_red_flags"). "related_red_flags" are background on why such signals
+matter: never say the listing shows one of them unless it is also in found_red_flags. Do not
+include prices or other numbers. Do not accuse the seller of fraud; say what looks wrong and
+why it matters."""
 
 
 def explain_flags(
@@ -173,12 +178,15 @@ def explain_flags(
     for listing, risk in flagged:
         text = f"{listing.raw_title} {listing.raw_description}"
         entries = index.retrieve(text, risk.matched_flags) if index else []
+        found = [e for e in entries if e.id in risk.matched_flags]
+        related = [e for e in entries if e.id not in risk.matched_flags]
         items.append({
             "listing_id": listing.listing_id,
             "title": listing.raw_title,
             "description": listing.raw_description,
             "signals": risk.signals,
-            "red_flag_entries": [{"title": e.title, "why": e.why} for e in entries],
+            "found_red_flags": [{"title": e.title, "why": e.why} for e in found],
+            "related_red_flags": [{"title": e.title, "why": e.why} for e in related],
         })  # fmt: skip
     prompt = "Listings to explain (JSON):\n<items>\n" + json.dumps(items, indent=1) + "\n</items>"
     try:
@@ -223,11 +231,23 @@ def price_check_facts(q: ParsedQuery, data: MarketData, config: dict[str, Any]) 
     return facts
 
 
-def live_term(q: ParsedQuery) -> str:
-    """Marketplace search text for a query, e.g. "pokemon charizard base set"."""
+def progress(event: str, **info: Any) -> None:
+    """Tell a streaming caller how a long step is going (the voice chat says something at
+    each one); does nothing when the graph isn't streamed or outside a graph run."""
+    try:
+        from langgraph.config import get_stream_writer
+
+        get_stream_writer()({"progress": event, **info})
+    except RuntimeError:  # not inside a graph run
+        pass
+
+
+def live_term(q: ParsedQuery, config: dict[str, Any] | None = None) -> str:
+    """Marketplace search text for a query, e.g. "pokemon charizard base set". A TCGdex set id
+    ("base1") is searched by its name: sellers don't write ids."""
     parts = ["pokemon", q.card_name or ""]
     if q.set_code and not q.any_printing:
-        parts.append(q.set_code)
+        parts.append(set_display_name(q.set_code, config) if config else q.set_code)
     return " ".join(p for p in parts if p).lower()
 
 
@@ -236,38 +256,57 @@ def live_refresh(
     q: ParsedQuery,
     config: dict[str, Any],
     llm: LLM,
-    scraper: MarketplaceScraper,
+    scraper: MarketplaceScraper | ReplayScraper,
     pricebook: PriceBook,
     log=None,
-) -> dict[str, Any]:
-    """Scrape Marketplace for this card, identify and price the new listings, add them to
-    the pool and to data/live_listings.json. Returns a short summary."""
+) -> tuple[list[CardListing], dict[str, Any]]:
+    """Scrape Marketplace for this card (`merchant.live_limit` listings), identify, check and
+    price them, and add them to the pool and to data/live_listings.json. Returns the fresh
+    in-scope listings (the ones this request picks from) and a short summary.
+
+    The summary's `links` (listing id -> Facebook listing page) are for the web page
+    (notebook 10): they stay in this run's memory and are never written to a file."""
     m = config["merchant"]
-    term = live_term(q)
+    term = live_term(q, config)
+    t0 = time.perf_counter()
     items = scraper.search(
         [term], limit=m["live_limit"], max_charge_usd=m["live_max_charge_usd"], save_as="live"
     )
-    known = {x.listing_id for x in data.listings}
-    rows = [r for r in (anonymize(i) for i in items) if r and r["listing_id"] not in known]
-    summary: dict[str, Any] = {"term": term, "scraped": len(items), "added": 0}
+    rows = [r for r in (anonymize(i, config) for i in items) if r]
+    summary: dict[str, Any] = {"term": term, "scraped": len(items), "usable": len(rows)}
+    summary["scrape_s"] = round(time.perf_counter() - t0, 1)
+    progress("scraped", count=len(items), usable=len(rows))
     if not rows:
-        return summary
-    extracted = extract_cards(llm, rows, config["ingest"]["batch_size"], log=log)
-    new, dropped = apply_scope_filter(build_listings(rows, extracted))
-    summary["dropped"] = dropped
-    summary["unresolved_sets"] = pricebook.resolve_sets(new)
-    summary["unpriced"] = pricebook.ensure_prices(new)
+        summary["kept"] = 0
+        return [], summary
+    fresh, dropped, stats = identify_listings(config, llm, rows, log=log, card_name=q.card_name)
+    progress("identified", kept=len(fresh))
+    summary["dropped"], summary["identify"] = dropped, stats
+    summary["unresolved_sets"] = pricebook.resolve_sets(fresh)
+    summary["unpriced"] = pricebook.ensure_prices(fresh)
+    summary["set_fixed"], summary["name_mismatch"] = pricebook.verify_cards(fresh)
     pricebook.save()
-    data.listings.extend(new)
+    known = {x.listing_id for x in data.listings}
+    data.listings.extend(x for x in fresh if x.listing_id not in known)
     data.prices.update({k: v for k, v in pricebook.prices.items() if k != "_meta"})
     p = repo_path(m["live_listings"])
     old = json.loads(p.read_text(encoding="utf-8")) if p.exists() else []
+    old_ids = {x["listing_id"] for x in old}
     p.write_text(
-        json.dumps(old + [x.model_dump() for x in new], indent=1, ensure_ascii=False),
+        json.dumps(old + [x.model_dump() for x in fresh if x.listing_id not in old_ids],
+                   indent=1, ensure_ascii=False),
         encoding="utf-8",
-    )
-    summary["added"] = len(new)
-    return summary
+    )  # fmt: skip
+    ids = {x.listing_id for x in fresh}
+    summary["links"] = {
+        lid: url
+        for i in items
+        if (lid := anon_id(first(i, "id", "listing_id"))) in ids
+        and (url := first(i, "itemUrl", "listingUrl", "url"))
+    }
+    summary["kept"] = len(fresh)
+    summary["seconds"] = round(time.perf_counter() - t0, 1)
+    return fresh, summary
 
 
 def make_searching_node(
@@ -275,14 +314,26 @@ def make_searching_node(
     config: dict[str, Any] | None = None,
     live: bool | None = None,
     llm: LLM | None = None,
-    scraper: MarketplaceScraper | None = None,
+    scraper: MarketplaceScraper | ReplayScraper | None = None,
     pricebook: PriceBook | None = None,
 ) -> Callable[[AgentState], dict[str, Any]]:
     """Build the SEARCHING node. Coming back from EVALUATING counts as the one retry and
-    relaxes the filters. With live search on, the first pass also scrapes Marketplace."""
+    relaxes the filters.
+
+    With live search on (`merchant.live`), each new card search scrapes Marketplace and the
+    request picks only from those fresh listings. A search for the same thing again in this
+    run reuses them, so a retry or a repeated question doesn't pay for a second scrape.
+    `merchant.live_replay` (a saved raw scrape) replaces Apify, for free testing."""
     cfg = config or load_config()
     pool = data or load_data(cfg)
-    use_live = cfg["merchant"]["live"] if live is None else live
+    m = cfg["merchant"]
+    use_live = m["live"] if live is None else live
+    fresh_by_term: dict[str, tuple[list[CardListing], dict[str, Any]]] = {}
+
+    def scraper_for_live():
+        if scraper is not None:
+            return scraper
+        return ReplayScraper(m["live_replay"]) if m.get("live_replay") else MarketplaceScraper(cfg)
 
     def searching_node(state: AgentState) -> dict[str, Any]:
         t0 = time.perf_counter()
@@ -294,14 +345,18 @@ def make_searching_node(
             relaxed = True
 
         update: dict[str, Any] = {}
-        if use_live and not relaxed and q.card_name:
-            model = llm or make_llm(cfg)
-            book = pricebook or PriceBook(cfg, pool.prices)
-            update["live_search"] = live_refresh(
-                pool, q, cfg, model, scraper or MarketplaceScraper(cfg), book
-            )
+        listings = pool.listings
+        if use_live and q.card_name:
+            term = live_term(q, cfg)
+            if term not in fresh_by_term:
+                progress("searching", term=term)
+                model = llm or make_llm(cfg)
+                real = pool.prices if pool.source != "samples" else real_prices(cfg)
+                book = pricebook or PriceBook(cfg, real)
+                fresh_by_term[term] = live_refresh(pool, q, cfg, model, scraper_for_live(), book)
+            listings, update["live_search"] = fresh_by_term[term]
 
-        candidates = find(pool.listings, q, cfg, relaxed=relaxed)
+        candidates = find(listings, q, cfg, relaxed=relaxed)
         timings = dict(state.get("stage_timings", {}))
         timings["SEARCHING"] = round(time.perf_counter() - t0, 4)
         return {

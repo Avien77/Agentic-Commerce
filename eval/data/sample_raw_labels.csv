@@ -1,0 +1,29 @@
+source_id,in_scope,out_reason,card_name,set_code,number,variant,condition,note
+S01,1,,Charizard,base1,4,holo,LP,
+S02,1,,Charizard,base1,4,holo,NM,a scam: still a single card in scope
+S03,1,,Charizard,base1,4,holo,HP,
+S04,1,,Charizard,base1,4,holo,NM,
+S05,1,,Charizard,base1,4,holo,unknown,a proxy: identified as the card it copies
+S06,0,graded,,,,,,PSA 9
+S07,1,,Charizard,base1,4,holo,unknown,condition not stated
+S08,0,is_lot,,,,,,50-card lot
+S09,1,,Charizard ex,sv03.5,199,holo,NM,pack fresh
+S10,1,,Charizard ex,sv03.5,199,holo,NM,brand new
+S11,1,,Charizard ex,sv03.5,199,holo,MP,
+S12,0,non_english,,,,,,Japanese
+S13,1,,Blastoise,base1,2,holo,LP,
+S14,1,,Blastoise,base1,2,holo,unknown,a custom (fake) card
+S15,1,,Blastoise,base1,2,holo,DMG,water damage and a bent corner
+S16,1,,Venusaur,base1,15,holo,NM,
+S17,1,,Venusaur,base1,15,holo,NM,
+S18,1,,Pikachu VMAX,swsh4,44,holo,NM,pack fresh
+S19,1,,Pikachu VMAX,swsh4,44,holo,LP,
+S20,1,,Pikachu VMAX,swsh4,44,holo,unknown,an orica (fake)
+S21,0,is_lot,,,,,,two cards
+S22,1,,Pikachu,base1,58,normal,LP,
+S23,1,,Pikachu,base1,58,normal,MP,"""played"""
+S24,1,,Mewtwo,base1,10,holo,LP,
+S25,1,,Mewtwo,base1,10,holo,NM,
+S26,1,,Mewtwo,base1,10,holo,HP,well loved
+S27,1,,Zapdos,base1,16,holo,LP,
+S28,1,,Zapdos,base1,16,holo,LP,

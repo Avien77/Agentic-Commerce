@@ -1,0 +1,50 @@
+{
+ "no_vocabulary": {
+  "transcripts": 20,
+  "wer": 0.1427,
+  "entity_recall": 0.8835,
+  "stt_s_median": 1.931,
+  "by_voice": {
+   "en-GB-RyanNeural": {
+    "wer": 0.1816,
+    "entity_recall": 0.8668
+   },
+   "en-IN-NeerjaNeural": {
+    "wer": 0.1971,
+    "entity_recall": 0.8002
+   },
+   "en-US-AvaNeural": {
+    "wer": 0.0571,
+    "entity_recall": 0.9334
+   },
+   "en-US-GuyNeural": {
+    "wer": 0.1349,
+    "entity_recall": 0.9334
+   }
+  }
+ },
+ "vocabulary": {
+  "transcripts": 20,
+  "wer": 0.0845,
+  "entity_recall": 0.9501,
+  "stt_s_median": 2.057,
+  "by_voice": {
+   "en-GB-RyanNeural": {
+    "wer": 0.1016,
+    "entity_recall": 0.9334
+   },
+   "en-IN-NeerjaNeural": {
+    "wer": 0.0444,
+    "entity_recall": 1.0
+   },
+   "en-US-AvaNeural": {
+    "wer": 0.0571,
+    "entity_recall": 0.9334
+   },
+   "en-US-GuyNeural": {
+    "wer": 0.1349,
+    "entity_recall": 0.9334
+   }
+  }
+ }
+}

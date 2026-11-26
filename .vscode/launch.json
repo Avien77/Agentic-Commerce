@@ -2,15 +2,45 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Text chat",
+      "name": "Demo: run sample queries (offline)",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/cli_text.py",
+      "module": "src",
+      "args": ["--demo", "--offline"],
+      "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "envFile": "${workspaceFolder}/.env"
     },
     {
-      "name": "Voice chat",
+      "name": "Text chat (offline)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src",
+      "args": ["--offline"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Text chat (Gemini)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Run all tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-q"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Voice chat (not built yet)",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/cli_voice.py",
@@ -18,7 +48,7 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
-      "name": "Run ablations",
+      "name": "Run ablations (not built yet)",
       "type": "debugpy",
       "request": "launch",
       "module": "eval.run_ablation",

@@ -1,0 +1,105 @@
+{
+ "base1-4": {
+  "name": "Charizard",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 420.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "base1-2": {
+  "name": "Blastoise",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 160.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "base1-15": {
+  "name": "Venusaur",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 120.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "base1-10": {
+  "name": "Mewtwo",
+  "set_name": "Base Set",
+  "variants": {
+   "holofoil": 50.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "base1-58": {
+  "name": "Pikachu",
+  "set_name": "Base Set",
+  "variants": {
+   "normal": 12.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "sv03.5-199": {
+  "name": "Charizard ex",
+  "set_name": "151",
+  "variants": {
+   "holofoil": 115.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "sv03.5-205": {
+  "name": "Mew ex",
+  "set_name": "151",
+  "variants": {
+   "holofoil": 60.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "swsh7-215": {
+  "name": "Umbreon VMAX",
+  "set_name": "Evolving Skies",
+  "variants": {
+   "holofoil": 1250.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "swsh12-186": {
+  "name": "Lugia V",
+  "set_name": "Silver Tempest",
+  "variants": {
+   "holofoil": 110.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "sv08-238": {
+  "name": "Pikachu ex",
+  "set_name": "Surging Sparks",
+  "variants": {
+   "holofoil": 320.0
+  },
+  "currency": "USD",
+  "updated": "2026-11-25",
+  "source": "benchmark"
+ },
+ "_meta": {
+  "source": "Fixed benchmark prices, close to TCGplayer in November 2026"
+ }
+}

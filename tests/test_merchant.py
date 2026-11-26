@@ -1,5 +1,7 @@
 """Merchant Agent: search filters, the risk score, reflection and the price check."""
 
+import json
+
 from src.agents.merchant import (
     distinct_printings,
     find,
@@ -84,3 +86,38 @@ def test_price_check_facts(data, cfg):
     f = price_check_facts(q, data, cfg)
     assert f["found"] and f["market_for_condition"] == 34.0 and f["verdict"] == "on the high side"
     assert price_check_facts(ParsedQuery(card_name="Lugia"), data, cfg)["found"] is False
+
+
+def test_flag_explanations_get_found_and_related_red_flags_apart(data, cfg):
+    from src.agents.merchant import FLAG_SYSTEM, evaluate_listing, explain_flags
+
+    class Recorder:
+        def json(self, *, tag, system, prompt, schema):
+            self.system, self.prompt = system, prompt
+            return schema(reasons=[])
+
+    class Index:  # retrieval returns a related entry the listing doesn't show
+        def retrieve(self, text, keyword_ids):
+            return [f for f in data.red_flags if f.id in keyword_ids] + [
+                f for f in data.red_flags if f.id not in keyword_ids
+            ][:1]
+
+    listing = next(x for x in data.listings if x.label == "trap")
+    _, risk = evaluate_listing(listing, data, cfg)
+    rec = Recorder()
+    explain_flags(rec, [(listing, risk)], Index())
+    item = json.loads(rec.prompt.split("<items>")[1].split("</items>")[0])[0]
+    assert {f["title"] for f in item["found_red_flags"]} == {
+        f.title for f in data.red_flags if f.id in risk.matched_flags
+    }
+    assert len(item["related_red_flags"]) == 1 and "never say" in FLAG_SYSTEM
+
+
+def test_live_search_terms_use_set_names(cfg, tmp_path):
+    from src.agents.merchant import live_term
+
+    cfg["data"]["tcgdex_sets"] = str(tmp_path / "sets.json")
+    (tmp_path / "sets.json").write_text(json.dumps([{"id": "base1", "name": "Base Set"}]))
+    q = ParsedQuery(card_name="Charizard", set_code="base1")
+    assert live_term(q, cfg) == "pokemon charizard base set"
+    assert live_term(ParsedQuery(card_name="Mew", set_code="151"), cfg) == "pokemon mew 151"

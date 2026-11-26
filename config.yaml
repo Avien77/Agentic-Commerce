@@ -9,7 +9,8 @@ models:
   judge: "openai/gpt-oss-120b"         # Groq; LLM-as-judge
   offline: "rules"                     # No API calls: rule-based stand-ins, for tests and demos
   stt: "whisper-large-v3-turbo"        # Groq STT
-  stt_fallback: "small.en"             # Local faster-whisper
+  stt_fallback: "gemini-3.5-flash-lite"   # Gemini transcribes the audio when Groq fails (the plan's
+                                       # local faster-whisper has no Python 3.14 build for macOS)
   tts: "edge-tts"                      # Primary neural TTS
   temperature: 0.0
 
@@ -18,6 +19,10 @@ llm:
   fallback: primary_free_tier   # used when the active model's quota runs out (429 after retries)
   max_retries: 3           # retries on rate limits, with exponential backoff
   cache_dir: .cache/llm    # every response is cached on disk, so re-runs are free
+  thinking_level: low      # low | medium | high (gemini-3.8-flash rejects minimal): Gemini thinking
+                           # level / gpt-oss reasoning effort. Thinking tokens are billed as output;
+                           # measured on 3.8 Flash: low = 4.4 s and 60 output tokens per intent call,
+                           # model default = 8.7 s and 390 tokens, same answers.
 
 pricing:
   default_shipping_estimate: 5.00      # Used when shipping is unknown and not in-person
@@ -50,6 +55,22 @@ condition_utility_scores:
   HP: 0.4
   DMG: 0.2
   unknown: 0.5
+
+scoring:                     # how each listing that passes the hard rules is scored (notebook 01)
+  method: five_part          # five_part (below) | plan (Plan v2: U = w1*P + w2*C + w3*T, `personas`)
+  weights:                   # per buyer type; each part is 0-1, score = 100 x sum(weight x part)
+    budget_parent:     {deal: 0.45, condition: 0.15, trust: 0.20, convenience: 0.15, confidence: 0.05}
+    serious_collector: {deal: 0.20, condition: 0.40, trust: 0.20, convenience: 0.05, confidence: 0.15}
+    cautious_buyer:    {deal: 0.15, condition: 0.15, trust: 0.50, convenience: 0.10, confidence: 0.10}
+  deal_best_ratio: 0.70      # total <= 70% of the market price for its condition: deal 1.0
+  deal_worst_ratio: 1.30     # >= 130%: deal 0 (at market: 0.5). Too cheap is the risk score's job
+  trust_risk_share: 0.6      # trust = 0.6 x (1 - scam risk) + 0.4 x listing signals
+  photos_good: 3             # photos for a full photo signal
+  description_good_chars: 80 # description length for a full description signal
+  stale_days: 60             # listings older than this lose some trust (likely gone or stale)
+  pickup_miles: [10, 30, 60] # pickup within these distances: convenience 1.0, 0.7, 0.4; beyond 0.2
+  convenience_shipping: 0.6  # shipped, cost known
+  convenience_unknown: 0.5   # distance or shipping unknown
 
 personas:
   budget_parent:
@@ -86,32 +107,60 @@ data:
 scrape:
   actor: apify/facebook-marketplace-scraper
   city: detroit              # Facebook Marketplace city slug
-  queries:
-    - pokemon charizard card
-    - pokemon base set holo
-    - pokemon card pikachu
-    - pokemon 151 charizard ex
-    - pokemon blastoise venusaur card
-  results_limit: 100         # total across all queries (5 for a test run)
+  queries:                   # specific card searches: broad ones ("pokemon charizard card")
+    - charizard base set holo  # returned mostly lots, sealed boxes and graded cards (1 in 10 usable)
+    - charizard ex 151 pokemon
+    - pikachu vmax pokemon card
+    - umbreon vmax pokemon card
+    - blastoise base set pokemon
+    - venusaur base set pokemon
+    - mewtwo pokemon card
+    - gengar pokemon card
+    - lugia pokemon card
+    - rayquaza pokemon card
+  per_query: 10              # listings per search; one Apify run per search (10 x 10 = 100)
   include_listing_details: true   # descriptions are needed for the red-flag check
-  max_charge_usd: 2.0        # hard Apify spend cap per run
+  max_charge_usd: 2.0        # hard Apify spend cap for the whole snapshot, split across the runs
 
 ingest:
   batch_size: 20             # listings per LLM call, keeps free-tier usage low
+  parallel_calls: 4          # identification calls at a time (100 listings: 5 calls, all at once)
+  prefilter: true            # drop graded slabs, lots, sealed product, non-English and (live)
+                             # other cards by their title before any LLM call
+  identified_cache: .cache/identified   # cards already identified are not sent again; null: off
+  llm: null                  # model for card identification (a key under `models:`, e.g.
+                             # small = Groq gpt-oss-20b); null: the agents' model
+  placeholder_max_price: 1.0 # $1 or less is a "make an offer" placeholder, like $0: dropped
+  name_mismatch_confidence: 0.5   # identified name differs from TCGdex's card at that number
+
+buyer:                       # where the buyer is, for pickup distances
+  city: Detroit, MI
+  lat: 42.3314
+  lon: -83.0458
 
 tcgdex:
   base_url: https://api.tcgdex.net/v2/en
   timeout_s: 15
+  set_aliases:               # set names the LLM uses that TCGdex spells differently
+    scarlet & violet black star promos: svp
+    scarlet and violet black star promos: svp
+    sv black star promos: svp
+    sword & shield black star promos: swshp
+    sun & moon black star promos: smp
+    black & white black star promos: bwp
 
 search:
   fuzzy_threshold: 85        # card-name match on the first search
   relaxed_fuzzy_threshold: 75   # on the retry
-  max_candidates: 15
+  max_candidates: 100        # all of a live search's matches get scored, not the first few
 
 merchant:
-  live: false                # true: also scrape Marketplace for each new card search
-  live_limit: 20
-  live_max_charge_usd: 0.5
+  live: false                # true: scrape Marketplace for each confirmed request and pick the
+                             # best of those fresh listings (`--live`); uses the real snapshot data
+  live_limit: 100            # listings per live search: about $1.24 on Apify's Free plan
+  live_max_charge_usd: 1.5   # hard Apify spend cap per live search
+  live_replay: null          # a saved raw scrape (data/raw/*.json) to use instead of Apify:
+                             # the live path end to end for free (`--replay FILE`)
   live_listings: data/live_listings.json   # anonymized live results, reused next time
 
 rag:
@@ -120,5 +169,80 @@ rag:
   top_k: 3
 
 response:
-  max_alternatives: 1
-  ai_disclosure: "Hi, I'm an AI shopping assistant."
+  max_alternatives: 2        # the top pick plus 2 more: the best 3
+  ai_disclosure: "Hi, I'm an AI shopping assistant."   # first reply when there's no greeting
+
+dialogue:                    # how a conversation goes (ChatSession, notebook 07)
+  greet: true                # open with the greeting and one line of small talk
+  greeting: "Hi! I'm your AI card-shopping assistant. How are you doing today?"
+  ask_request: "So what cards are we looking for today?"
+  confirm: true              # read the request back and wait for a yes before searching
+  max_confirm_rounds: 2      # a correction gets one more read-back; after that it searches
+  ask_correction: "No problem. What should I change?"
+
+voice:                       # push-to-talk voice chat: notebook 09, `python -m src --voice`
+  sample_rate: 16000         # Hz, mono: what Whisper expects
+  stt_language: en
+  stt_vocabulary: [Pokémon, Charizard, Pikachu, VMAX, Mewtwo, Blastoise, Venusaur, Zapdos,
+                   Umbreon, Gengar, Lugia, Rayquaza, Base Set, "151", holo, ex, near mint,
+                   lightly played]   # spelled for Whisper; the listing pool's names are added
+  stt_prompt_chars: 600      # Whisper reads at most 224 tokens of prompt
+  tts_voice: en-US-AvaNeural # any name from `uv run edge-tts --list-voices`
+  tts_rate: "+0%"            # speaking speed, e.g. "+10%"
+  min_seconds: 0.4           # shorter recordings are ignored (Enter pressed twice by mistake)
+  silence_peak: 0.001        # quieter than this is silence: usually no microphone permission
+  clip_cache: .cache/voice   # filler clips made by Edge-TTS, so later starts are instant
+  timing_log: eval/voice_runs.jsonl   # one row per spoken turn (hypothesis H5)
+  search_lines:              # one plays when a live search starts
+    - Hold up a sec while I swim the internet for you!
+    - Give me a minute, I'm diving into Marketplace for you.
+    - Hang tight, I'm fishing through the listings for you.
+  progress_lines:            # played as the live search gets through each step
+    scraped: Okay, I've got a big pile of listings. Now sorting the real cards from the junk.
+    identified: Almost there. I'm checking every price against the market.
+  still_lines:               # if nothing has been said for `still_after_s` during a live search
+    - Still swimming. There are a lot of cards out there.
+    - Bear with me, some sellers write really long descriptions.
+    - Nearly there, just a few more listings to go.
+  still_after_s: 25
+  fillers:                   # one plays when EVALUATING starts; no prices or card names
+    - Let me double-check that price.
+    - One moment, I'm checking those listings.
+    - Give me a second to look at the sellers.
+    - Hang on, I'm comparing prices.
+    - Let me make sure these listings look safe.
+
+ui:                          # the local web page (notebook 10): python -m src --ui (add --voice to talk)
+  host: 127.0.0.1            # this computer only
+  port: 8765                 # the next free port if this one is taken
+  open_browser: true         # open a tab at startup (--no-browser to skip)
+  max_rows: 25               # listings shown per search, best first
+  card_cache: .cache/cards   # rarity, picture and TCGplayer product id per card (TCGdex), fetched once
+
+evaluation:                  # the benchmark and the ablation runner (notebook 08)
+  benchmark_dir: eval/data   # pool.json, prices.json, queries.json, memory_scripts.json
+  results_dir: eval/results  # one folder per run: results.csv, replies.jsonl, report.md, ...
+  judge_model: judge         # key under `models:`; gpt-oss-120b, another family than Gemini
+  variants:                  # each changes one thing against `full`; keys of src/evaluation.py's Variant
+    full:            {description: "the four-agent system as built"}
+    single_agent:    {agents: single, description: "one LLM call that sees every listing with the same tool outputs"}
+    frontier_single: {agents: single, model: frontier, plan_ablation: 6, description: "the single pass on the frontier model (paid)"}
+    small_model:     {model: small, plan_ablation: 5, description: "the four agents on the small Groq model"}
+    no_reflection:   {reflect: false, plan_ablation: 3, description: "no price or scam checks before ranking"}
+    no_rag:          {rag: false, description: "red-flag explanations from keywords only, no retrieval"}
+    no_clarify:      {clarify: false, description: "never asks a clarifying question"}
+    no_number_check: {number_check: false, description: "the reply's amounts and names aren't checked"}
+    template_reply:  {reply: template, description: "fixed-wording replies, no LLM for the reply"}
+    no_memory:       {memory: false, description: "nothing carried between turns of a conversation"}
+    plan_scoring:    {scoring: plan, description: "Plan v2's 3-part utility instead of the 5-part score"}
+  prices_per_million:        # USD per 1M tokens [input, output], checked 2026-11-26; unknown models count as $0
+    gemini-3.8-flash: [0.75, 3.75]        # introductory until 2026-12-31; $1.50 / $7.50 from 2027-01-01
+    gemini-3.1-pro-preview: [2.00, 12.00] # up to 200k tokens of context
+    openai/gpt-oss-20b: [0.075, 0.30]     # Groq
+    openai/gpt-oss-120b: [0.15, 0.60]     # Groq (the judge)
+  stt_price_per_hour: 0.04   # Groq whisper-large-v3-turbo, per hour of audio
+  voices:                    # Edge-TTS voices that speak the requests in the speech-to-text test
+    - en-US-AvaNeural        # the voice chat's own voice
+    - en-US-GuyNeural
+    - en-GB-RyanNeural
+    - en-IN-NeerjaNeural

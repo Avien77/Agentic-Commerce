@@ -2,13 +2,19 @@
 # then run its last cell (or `uv run python -m src.nbexport`).
 """LangGraph 7-state orchestration graph (Section 3 & 8).
 
-States: INTENT -> CLARIFY (optional) -> SEARCHING -> EVALUATING -> RANKING -> RESPONDING -> DONE
+States: INTENT -> CLARIFY (optional) -> CONFIRM (optional) -> SEARCHING -> EVALUATING ->
+RANKING -> RESPONDING -> DONE
 Bounded loops:
   1. INTENT -> CLARIFY (at most 1 question) -> INTENT (once user answers) or pause
-  2. EVALUATING -> SEARCHING (at most 1 retry with relaxed filters if 0 listings survive)
-  3. RESPONDING -> RESPONDING (at most 1 retry if number check fails, then template fallback)
+  2. INTENT -> CONFIRM (read-back, at most `dialogue.max_confirm_rounds`) -> pause; a yes
+     re-enters at SEARCHING, a correction at INTENT
+  3. EVALUATING -> SEARCHING (at most 1 retry with relaxed filters if 0 listings survive)
+  4. RESPONDING -> RESPONDING (at most 1 retry if number check fails, then template fallback)
 """
 
+import argparse
+import json
+import tempfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -19,13 +25,18 @@ from src.agents.consumer import make_done_node, make_intent_node, make_ranking_n
 from src.agents.humanizer import make_responding_node
 from src.agents.merchant import distinct_printings, make_evaluating_node, make_searching_node
 from src.agents.platform import (
+    looks_like_request,
     make_clarify_node,
+    make_confirm_node,
+    read_confirmation,
     route_after_evaluating,
     route_after_intent,
     route_after_responding,
+    route_start,
+    smalltalk_reply,
 )
-from src.config import load_config
-from src.llm import LLM, make_llm
+from src.config import load_config, repo_path
+from src.llm import LLM, LLMError, make_llm
 from src.memory import BuyerMemory
 from src.pipeline import MarketData, load_data
 from src.state import AgentState
@@ -40,6 +51,7 @@ def build_graph(
     data: MarketData | None = None,
     intent_node: Node | None = None,
     clarify_node: Node | None = None,
+    confirm_node: Node | None = None,
     searching_node: Node | None = None,
     evaluating_node: Node | None = None,
     ranking_node: Node | None = None,
@@ -61,6 +73,7 @@ def build_graph(
     pool = data or load_data(cfg)
 
     max_clarify = int(cfg["limits"]["max_clarify_questions"])
+    max_confirm = int(cfg["dialogue"]["max_confirm_rounds"])
     max_search_retries = int(cfg["limits"]["max_search_retries"])
     max_humanizer_retries = int(cfg["limits"]["max_humanizer_retries"])
     risk_reject = float(cfg["thresholds"]["risk_reject"])
@@ -74,6 +87,7 @@ def build_graph(
     graph.add_node(
         "CLARIFY", clarify_node or make_clarify_node(config=cfg, llm=model, printings_fn=printings)
     )
+    graph.add_node("CONFIRM", confirm_node or make_confirm_node(cfg))
     graph.add_node("SEARCHING", searching_node or make_searching_node(pool, cfg, llm=model))
     graph.add_node("EVALUATING", evaluating_node or make_evaluating_node(pool, cfg, llm=model))
     graph.add_node("RANKING", ranking_node or make_ranking_node(config=cfg))
@@ -84,13 +98,16 @@ def build_graph(
     )
     graph.add_node("DONE", done_node or make_done_node(memory=mem))
 
-    graph.add_edge(START, "INTENT")
+    graph.add_conditional_edges(START, route_start, {"INTENT": "INTENT", "SEARCHING": "SEARCHING"})
 
     graph.add_conditional_edges(
         "INTENT",
-        lambda s: route_after_intent(s, max_clarify=max_clarify, printings_fn=printings),
-        {"CLARIFY": "CLARIFY", "SEARCHING": "SEARCHING"},
+        lambda s: route_after_intent(
+            s, max_clarify=max_clarify, printings_fn=printings, max_confirm=max_confirm
+        ),
+        {"CLARIFY": "CLARIFY", "CONFIRM": "CONFIRM", "SEARCHING": "SEARCHING"},
     )
+    graph.add_edge("CONFIRM", END)  # pause: ChatSession sends the yes or the correction back
 
     if pause_on_clarify:
         graph.add_edge("CLARIFY", END)
@@ -123,43 +140,141 @@ def build_graph(
 
 
 class ChatSession:
-    """One conversation with the graph: handles the clarify pause and says it is an AI
-    assistant at the start of the session (Section 6).
+    """One conversation with the graph (Section 6).
+
+    With `dialogue.greet` it opens with a greeting (which says it is an AI assistant), answers
+    the buyer's reply with one line of small talk and asks what they are looking for; if that
+    reply already asks for a card, it goes straight to the request. A request can get one
+    clarifying question; with `dialogue.confirm` it is then read back ("Okay, so just to
+    confirm...") and searched only after a yes. A correction is read back once more.
 
         chat = ChatSession(build_graph())
-        reply, state = chat.send("Base Set Charizard under $400")
+        print(chat.opening())                     # Hi! I'm your AI card-shopping assistant...
+        reply, state = chat.send("I'm good!")     # Glad to hear it! So what cards ...
+        reply, state = chat.send("Base Set Charizard under $400")   # Okay, so just to confirm..
+        reply, state = chat.send("yes")           # the recommendation
     """
 
-    def __init__(self, app, session_id: str = "default", config: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        app,
+        session_id: str = "default",
+        config: dict[str, Any] | None = None,
+        llm: LLM | None = None,
+        greet: bool | None = None,
+        confirm: bool | None = None,
+    ):
         self.app = app
         self.session_id = session_id
         self.cfg = config or load_config()
-        self.pending: str | None = None  # request waiting for the answer to our question
+        d = self.cfg["dialogue"]
+        self.greet = d["greet"] if greet is None else greet
+        self.confirm = d["confirm"] if confirm is None else confirm
+        self.llm = llm or make_llm(self.cfg)
+        self.stage = "request"  # smalltalk | request | clarify | confirm | correct
+        self.request: str | None = None  # the request being worked on
+        self.answers: list[str] = []  # its clarify answer and corrections, in order
+        self.query = None  # the parsed request waiting for a yes
+        self.question = ""  # the last read-back
+        self.confirm_count = 0
+        self.sample_note_said = False  # the "these are sample listings" note, said once
         self.turns = 0
 
-    def send(self, text: str) -> tuple[str, AgentState]:
+    def opening(self) -> str | None:
+        """The first line, before the buyer says anything; None without a greeting."""
+        if not self.greet or self.turns:
+            return None
+        self.stage = "smalltalk"
+        self.turns += 1
+        return self.cfg["dialogue"]["greeting"]
+
+    def send(
+        self, text: str, on_task: Callable[[str, str], None] | None = None
+    ) -> tuple[str, AgentState]:
+        """The reply and the final state. `on_task(name, phase, info)` is called as each node
+        starts and ends (phase "start" or "end", info {}) and for each progress event of a long
+        step (phase "progress", e.g. ("scraped", "progress", {"count": 78, "usable": 65})): the
+        voice chat talks over the wait and the web page shows it."""
+        d = self.cfg["dialogue"]
+        max_clarify = int(self.cfg["limits"]["max_clarify_questions"])
         base: AgentState = {
             "session_id": self.session_id,
             "search_retry_count": 0,
             "humanizer_retry_count": 0,
+            "confirm_first": self.confirm,
+            "sample_note_said": self.sample_note_said,
         }
-        if self.pending is not None:
-            state: AgentState = {
-                **base, "user_input": self.pending, "clarify_answer": text, "clarify_count": 1
-            }  # fmt: skip
-        else:
-            state = {**base, "user_input": text, "clarify_count": 0}
-        result = self.app.invoke(state)
+        if self.stage == "smalltalk":
+            self.stage = "request"
+            if not looks_like_request(text):
+                line = f"{smalltalk_reply(self.llm, text)} {d['ask_request']}"
+                return self._say(line), {"current_state": "SMALLTALK"}
+
+        if self.stage == "confirm":
+            reading = read_confirmation(self.llm, self.question, text)
+            if reading.confirmed:
+                state: AgentState = {**base, "user_input": self.request,
+                                     "parsed_query": self.query, "confirmed": True,
+                                     "confirm_count": self.confirm_count}  # fmt: skip
+            elif reading.correction:
+                self.answers.append(reading.correction)
+                state = self._again(base, max_clarify)
+            else:
+                self.stage = "correct"
+                return self._say(d["ask_correction"]), {"current_state": "CONFIRM"}
+        elif self.stage == "correct":
+            self.answers.append(text)
+            state = self._again(base, max_clarify)
+        elif self.stage == "clarify":
+            self.answers.append(text)
+            state = {**base, "user_input": self.request, "clarify_answer": text,
+                     "clarify_count": 1, "confirm_count": self.confirm_count}  # fmt: skip
+        else:  # a new request
+            self.request, self.answers, self.query, self.confirm_count = text, [], None, 0
+            state = {**base, "user_input": text, "clarify_count": 0, "confirm_count": 0}
+
+        result = self._run(state, on_task)
         if result.get("current_state") == "CLARIFY":
-            self.pending = state["user_input"]
+            self.stage = "clarify"
             reply = result["clarifying_question"]
+        elif result.get("current_state") == "CONFIRM":
+            self.stage = "confirm"
+            self.query = result["parsed_query"]
+            self.confirm_count = int(result.get("confirm_count", self.confirm_count + 1))
+            reply = self.question = result["confirm_question"]
         else:
-            self.pending = None
+            self.stage = "request"
+            self.request, self.answers, self.query = None, [], None
+            self.sample_note_said = True
             reply = result["final_response"]
+        return self._say(reply), result
+
+    def _again(self, base: AgentState, max_clarify: int) -> AgentState:
+        """The request with its answers and corrections, parsed again (no new question)."""
+        return {**base, "user_input": self.request, "clarify_answer": "\n".join(self.answers),
+                "clarify_count": max_clarify, "confirm_count": self.confirm_count}  # fmt: skip
+
+    def _run(self, state: AgentState, on_task) -> AgentState:
+        if on_task is None:
+            return self.app.invoke(state)
+        result = state  # the same run, streamed: nodes, progress events and the state
+        for mode, chunk in self.app.stream(state, stream_mode=["tasks", "custom", "values"]):
+            if mode == "values":
+                result = chunk
+            elif mode == "custom":
+                if isinstance(chunk, dict) and chunk.get("progress"):
+                    info = {k: v for k, v in chunk.items() if k != "progress"}
+                    on_task(chunk["progress"], "progress", info)
+            else:
+                on_task(chunk["name"], "start" if "input" in chunk else "end", {})
+        return result
+
+    def _say(self, reply: str) -> str:
+        """Without a greeting, the first reply says it is an AI assistant (Section 6)."""
         if self.turns == 0:
             reply = f"{self.cfg['response']['ai_disclosure']} {reply}"
         self.turns += 1
-        return reply, result
+        return reply
 
 
 def export_architecture_diagram(output_path: Path | str = "docs/architecture.png") -> Path:
@@ -170,3 +285,109 @@ def export_architecture_diagram(output_path: Path | str = "docs/architecture.png
     png_bytes = compiled.get_graph().draw_mermaid_png()
     out.write_bytes(png_bytes)
     return out
+
+
+def run_sample_queries(app, config: dict[str, Any]) -> bool:
+    """Every query in data/samples/sample_queries.json through the graph; True if all pass."""
+    queries = json.loads(repo_path("data/samples/sample_queries.json").read_text(encoding="utf-8"))
+    passed = 0
+    for q in queries:
+        chat = ChatSession(app, q["id"], config, greet=False)
+        print(f"{q['id']}  {q['request']}")
+        reply, state = chat.send(q["request"])
+        for _ in range(3):  # at most a question and a read-back, answered from the script
+            if state["current_state"] == "CLARIFY":
+                answer = q["clarify_answer"]
+            elif state["current_state"] == "CONFIRM":
+                answer = "yes"
+            else:
+                break
+            print(f"      asks: {reply}\n      user: {answer}")
+            reply, state = chat.send(answer)
+        ranked = state.get("ranked_listings") or []
+        top = ranked[0].listing.listing_id if ranked else None
+        pc = state.get("price_check") or {}
+        market = f"${pc['market_for_condition']:,.2f}" if pc.get("found") else None
+        ok = {
+            "recommend": top in q["acceptable"],
+            "nothing_fits": top is None,
+            "price_check": market is not None and market in reply,  # states the market price
+        }[q["expect_status"]]
+        passed += ok
+        secs = sum(state.get("stage_timings", {}).values())
+        print(f"      {'PASS' if ok else 'FAIL'} ({q['expect_status']}, top pick {top}, {secs:.1f}s, "
+              f"reply by {state.get('response_source')}): {reply}\n")  # fmt: skip
+    print(f"{passed}/{len(queries)} sample queries passed")
+    return passed == len(queries)
+
+
+def add_live_options(ap: argparse.ArgumentParser) -> None:
+    ap.add_argument(
+        "--live",
+        action="store_true",
+        help="search Facebook Marketplace for each confirmed request (Apify: "
+        "merchant.live_limit listings, about $1.24 per 100)",
+    )
+    ap.add_argument("--replay", metavar="FILE",
+                    help="like --live, but replay a saved scrape (data/raw/*.json): free")  # fmt: skip
+
+
+def live_mode(config: dict[str, Any], live: bool, replay: str | None) -> None:
+    """--live / --replay: each confirmed request searches Marketplace (or replays a saved
+    scrape) and picks from those fresh listings, with real TCGdex prices, not the samples."""
+    if replay:
+        config["merchant"]["live_replay"] = str(Path(replay).resolve())
+    if live or replay:
+        config["merchant"]["live"] = True
+        config["data"]["use_samples"] = False
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Terminal chat: `python -m src`. --offline uses the rule-based stand-ins (no API calls),
+    --demo runs the sample queries instead of chatting, --live / --replay search live.
+    In VS Code: Run and Debug panel."""
+    ap = argparse.ArgumentParser(prog="python -m src", description="Agentic Commerce chat")
+    ap.add_argument("--offline", action="store_true", help="no API calls (rule-based stand-ins)")
+    ap.add_argument("--demo", action="store_true", help="run the sample queries, then exit")
+    add_live_options(ap)
+    ap.add_argument("--session", default="terminal", help="buyer-memory session id")
+    ap.add_argument("--db", help="buyer-memory SQLite file (default data/buyer_memory.sqlite)")
+    args = ap.parse_args(argv)
+
+    cfg = load_config()
+    live_mode(cfg, args.live, args.replay)
+    llm = make_llm(cfg, "offline" if args.offline else None)
+    data = load_data(cfg)
+    if args.demo:  # fresh memory, so earlier chats can't change the demo
+        memory = BuyerMemory(Path(tempfile.mkdtemp()) / "demo.sqlite")
+    else:
+        memory = BuyerMemory(args.db) if args.db else BuyerMemory()
+    app = build_graph(cfg, memory=memory, llm=llm, data=data)
+    where = "live" if cfg["merchant"]["live"] else f"{len(data.listings)} ({data.source})"
+    print(f"model: {llm.model} | listings: {where}\n")
+
+    if args.demo:
+        ok = run_sample_queries(app, cfg)
+        print(f"LLM usage: {llm.usage()}")
+        return 0 if ok else 1
+
+    chat = ChatSession(app, args.session, cfg, llm=llm)
+    print("Type quit to stop.")
+    opening = chat.opening()
+    if opening:
+        print(f"assistant: {opening}")
+    else:
+        print("Ask for a card, e.g. 'Base Set Charizard under $400'.")
+    while True:
+        try:
+            text = input("\nyou: ").strip()
+        except EOFError, KeyboardInterrupt:
+            break
+        if not text or text.lower() in {"quit", "exit"}:
+            break
+        try:
+            reply, _ = chat.send(text)
+        except LLMError as e:
+            reply = f"(LLM error: {e})"
+        print(f"assistant: {reply}")
+    return 0

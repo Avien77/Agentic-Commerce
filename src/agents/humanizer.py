@@ -68,6 +68,8 @@ def card_facts(item: EvaluatedListing) -> dict[str, Any]:
         "total": fmt_usd(lc.total),
         "city": x.location_city,
     }
+    if item.reasons:
+        out["why"] = item.reasons  # e.g. ["25% under the market price", "near mint"]
     if item.warning:
         out["warning"] = item.warning
     return out
@@ -88,7 +90,7 @@ def build_facts(
         notes.append("the budget was taken from the buyer's saved profile")
     if state.get("relaxed_filters"):
         notes.append("nothing safe matched exactly, so the search was widened")
-    if sample_data:
+    if sample_data and not state.get("sample_note_said"):  # once per conversation
         notes.append("these are sample listings and sample prices, not live data")
     risky = [x for x in rejected if x.risk_score >= reject_at]
     facts: dict[str, Any] = {
@@ -161,39 +163,54 @@ def _template_body(facts: dict[str, Any]) -> str:
             else f", shipping {t['shipping']}"
         )
         lead = (
-            f"Your best option is the {t['card']} from {t['set']} in {t['condition']} condition "
-            f"for {t['total']} total{how}."
+            f"Your best bet is the {t['card']} from {t['set']}, {t['condition']}, "
+            f"for {t['total']}{how}"
         )
-        parts = [lead]
+        why = [w for w in t.get("why", []) if w != t["condition"]][:2]  # condition is said already
+        parts = [lead + (f": {_and(why)}." if why else ".")]
         if t.get("warning"):
-            parts.append(f"One thing to check: {t['warning'].rstrip('.')}.")
+            parts.append(f"Heads up: {t['warning'].rstrip('.')}.")
+        alts = []
         for a in facts.get("alternatives", []):
-            parts.append(f"A backup is the {a['card']} ({a['condition']}) at {a['total']}.")
+            why = next((w for w in a.get("why", []) if w != a["condition"]), None)
+            text = f"the {a['card']} ({a['condition']}) at {a['total']}" + (
+                f", {why}" if why else ""
+            )
+            if a.get("warning"):
+                w = a["warning"].rstrip(".")
+                text += f", but {w[:1].lower()}{w[1:]}"
+            alts.append(text)
+        if alts:
+            parts.append(f"Also worth a look: {'; or '.join(alts)}.")
         n = len(facts.get("skipped_risky", []))
         if n:
-            parts.append(f"I skipped {n} listing{'s' if n > 1 else ''} that looked risky.")
+            parts.append(f"I skipped {n} listing{'s' if n > 1 else ''} that looked sketchy.")
         return " ".join(parts)
     if status == "nothing_fits":
         c = facts.get("closest")
         if c:
             return (
-                f"I couldn't find a {facts['card_wanted']} that fits. The closest is the "
+                f"No luck on a {facts['card_wanted']} that fits. The closest is the "
                 f"{c['card']} in {c['condition']} condition at {c['total']}, but {facts['why']}."
             )
-        return f"I couldn't find a safe {facts['card_wanted']} for you: {facts['why']}."
+        return f"No luck on a safe {facts['card_wanted']}: {facts['why']}."
     if status == "price_check":
         lead = (
             f"{facts['asked']} for a {facts['condition']} {facts['card']} is {facts['verdict']}. "
             if "asked" in facts
             else ""
         )
+        one = "one" if "asked" in facts else facts["card"]  # the card is named at least once
         return lead + (
-            f"A {facts['condition']} {facts['card']} usually goes for about "
-            f"{facts['market_for_condition']}."
+            f"A {facts['condition']} {one} usually goes for about {facts['market_for_condition']}."
         )
     if status == "price_check_unknown":
         return f"I don't have a market price for {facts.get('card_wanted') or 'that card'} yet."
-    return f"I couldn't find any listings for {facts.get('card_wanted') or 'that card'} right now."
+    return f"I couldn't find any {facts.get('card_wanted') or 'listings for that card'} right now."
+
+
+def _and(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
 
 
 def allowed_amounts(facts: dict[str, Any]) -> list[float]:
@@ -208,19 +225,24 @@ def required_names(facts: dict[str, Any]) -> list[str]:
     return []
 
 
-HUMANIZER_SYSTEM = """You are a friendly, knowledgeable card-shop assistant speaking out loud
-to a buyer. Turn the facts into a natural spoken reply.
+HUMANIZER_SYSTEM = """You are a friendly regular at a local card shop, helping a buyer out loud.
+Turn the facts into what you'd actually say: casual, warm and quick.
 Rules:
-- At most 3 short sentences. No lists, no markdown, no emoji.
+- 2 or 3 short sentences, about 50 words at most. It is spoken, so no lists, markdown or emoji.
+- Talk like a person: contractions, plain words, a quick reaction is fine ("Oh nice",
+  "Good news"). No report phrasing: never "I recommend", "Please note", "Based on" or
+  "Additionally".
 - Use dollar amounts exactly as written in the facts. Never calculate, round or invent numbers.
 - Mention only cards that appear in the facts, by their card name.
-- If there is a warning or skipped risky listings, mention it briefly and calmly.
-- If the notes say something was estimated, taken from the saved profile, widened or sample
-  data, say so in a few words.
+- Lead with the top card and why, in a few words from its "why" list. Then the alternatives
+  together in one sentence, each with its total (and its warning, if it has one).
+- A warning or skipped risky listings: one short, calm mention.
+- Notes (estimated shipping, saved budget, widened search, sample data): a few words each, and
+  only if they are in the notes.
 - Lead with what the buyer's persona cares about: "Budget Parent" -> the total price;
   "Serious Collector" -> the condition; "Cautious Buyer" -> why the pick looks safe.
-- Sound like a person talking, not a report: contractions are fine, no filler openers like
-  "Great question"."""
+- If the status is "price_check", answer the question first: is the asked price fair compared
+  with the market price for that condition? Mention a listing only after that."""
 
 
 def make_responding_node(

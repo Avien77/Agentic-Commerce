@@ -1,0 +1,5 @@
+variant,category,queries,top1_accurate,top3_accurate,policy_violation
+full,complex,11,0.6364,0.7273,0.6364
+full,consultative,5,0.6,0.6,0.0
+full,memory,4,0.25,0.75,0.5
+full,simple,6,0.6667,1.0,0.6667

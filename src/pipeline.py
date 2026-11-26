@@ -7,8 +7,10 @@ the Merchant Agent searches, and serves its optional live search."""
 import csv
 import hashlib
 import json
+import math
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
@@ -16,11 +18,12 @@ from typing import Any
 from urllib.parse import quote_plus
 
 import httpx
+from diskcache import Cache
 from pydantic import BaseModel, Field
 from rapidfuzz import fuzz, process
 
 from src.config import env, repo_path
-from src.llm import LLM, offline_handler
+from src.llm import LLM, make_llm, offline_handler
 from src.schemas import CardListing, Condition, Variant
 from src.tools.risk import RedFlag, parse_red_flags
 
@@ -58,10 +61,10 @@ class MarketplaceScraper:
         max_charge_usd: float,
         details: bool = True,
         city: str | None = None,
-        save_as: str = "snapshot",
+        save_as: str | None = "snapshot",
     ) -> list[dict]:
-        """Scrape the search terms and return raw items. Raw items are saved to data/raw/,
-        which is gitignored because they contain seller names and listing URLs."""
+        """Scrape the search terms (one Apify run) and return the raw items. Unless save_as is
+        None, they are also saved to data/raw/, which is gitignored (it has listing links)."""
         s = self.cfg["scrape"]
         run_input = {
             "startUrls": [{"url": search_url(city or s["city"], t)} for t in terms],
@@ -81,14 +84,54 @@ class MarketplaceScraper:
         # apify-client 3.x returns a Run object; older versions returned a dict.
         dataset_id = run["defaultDatasetId"] if isinstance(run, dict) else run.default_dataset_id
         items = list(self.client.dataset(dataset_id).iterate_items())
-
-        out_dir = repo_path(self.cfg["data"]["raw_dir"])
-        out_dir.mkdir(parents=True, exist_ok=True)
-        stamp = time.strftime("%Y%m%d_%H%M%S")
-        (out_dir / f"{save_as}_{stamp}.json").write_text(
-            json.dumps(items, indent=1, ensure_ascii=False), encoding="utf-8"
-        )
+        if save_as:
+            save_raw(self.cfg, items, save_as)
         return items
+
+
+class ReplayScraper:
+    """Stands in for MarketplaceScraper with a saved raw scrape (data/raw/*.json): the live
+    search runs end to end for free, on the same listings every time."""
+
+    def __init__(self, path: str | Path):
+        self.path = Path(path)
+        self.items = json.loads(self.path.read_text(encoding="utf-8"))
+
+    def search(self, terms: list[str], limit: int, max_charge_usd: float, **_ignored) -> list[dict]:
+        return self.items[:limit]
+
+
+def save_raw(config: dict[str, Any], items: list[dict], prefix: str) -> Path:
+    out_dir = repo_path(config["data"]["raw_dir"])
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}.json"
+    path.write_text(json.dumps(items, indent=1, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def scrape_snapshot(
+    config: dict[str, Any], scraper: MarketplaceScraper, per_query: int | None = None, log=print
+) -> list[dict]:
+    """The snapshot: one Apify run per search in `scrape.queries`, so every search
+    contributes `per_query` listings. A listing found by two searches is kept once. The spend
+    cap `scrape.max_charge_usd` is split evenly across the runs. Saves one combined raw file.
+    """
+    s = config["scrape"]
+    n = per_query or s["per_query"]
+    cap = s["max_charge_usd"] / len(s["queries"])
+    seen: set[str] = set()
+    items: list[dict] = []
+    for q in s["queries"]:
+        got = scraper.search([q], n, cap, details=s["include_listing_details"], save_as=None)
+        new = [i for i in got if str(first(i, "id", "listing_id")) not in seen]
+        seen.update(str(first(i, "id", "listing_id")) for i in new)
+        items += new
+        if log:
+            log(f"  {q!r}: {len(got)} listings, {len(new)} new")
+    path = save_raw(config, items, "snapshot")
+    if log:
+        log(f"{len(items)} listings saved to {path.relative_to(repo_path('.'))}")
+    return items
 
 
 def latest_raw(config: dict[str, Any], prefix: str = "snapshot") -> Path | None:
@@ -136,30 +179,63 @@ def delivery_type(types: Any) -> str:
     return "unknown"
 
 
-def anonymize(item: dict) -> dict | None:
-    """Map one raw Apify item to the fields we keep (Section 14). Seller name, seller id and
-    the listing URL are dropped; location is kept at city level. Returns None for sold
-    listings and items without a title, id or a price above $0."""
-    if first(item, "is_sold") is True:
-        return None
-    title = first(item, "marketplace_listing_title", "custom_title", "title")
-    price = to_price(first(item, "listing_price", "price"))
-    source_id = first(item, "id", "listing_id")
-    if not (title and source_id and price):
-        return None
-    desc = first(item, "redacted_description.text", "description.text", "description")
-    photos = first(item, "listing_photos", "photos")
-    n_photos = (
-        len(photos) if isinstance(photos, list) else int(bool(first(item, "primary_listing_photo")))
+def miles(a: tuple[float, float], b: tuple[float, float]) -> float:
+    """Great-circle distance between two (lat, lon) points, in miles."""
+    lat1, lon1, lat2, lon2 = map(math.radians, (*a, *b))
+    h = (
+        math.sin((lat2 - lat1) / 2) ** 2
+        + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
     )
+    return 3958.8 * 2 * math.asin(math.sqrt(h))
+
+
+def anonymize(item: dict, config: dict[str, Any] | None = None) -> dict | None:
+    """Map one raw Apify item to the fields we keep (Section 14). Seller details and the
+    listing URL are dropped; location is kept at city level, plus the distance from the
+    buyer's city (config `buyer`). Returns None for sold or hidden listings and items without
+    a title, id or a real price: $0 or, with a config, up to `ingest.placeholder_max_price`
+    ($1 "make an offer" placeholders).
+
+    Field names are the ones the actor returned in the first real scrape (2026-11-24):
+    listingTitle, listingPrice.amount, description.text, condition, deliveryTypes,
+    locationText.text, location.latitude, listingPhotos, timestamp, isPending, isSold. Older
+    snake_case names still work.
+    """
+    if first(item, "isSold", "is_sold") is True or first(item, "isHidden") is True:
+        return None
+    title = first(item, "listingTitle", "marketplace_listing_title", "custom_title", "title")
+    price = to_price(first(item, "listingPrice", "listing_price", "price"))
+    source_id = first(item, "id", "listing_id")
+    floor = float(config["ingest"]["placeholder_max_price"]) if config else 0.0
+    if not (title and source_id and price) or price <= floor:
+        return None
+    desc = first(item, "description.text", "redacted_description.text", "description")
+    photos = first(item, "listingPhotos", "listing_photos", "photos")
+    primary = first(item, "primaryListingPhoto", "primary_listing_photo")
+    n_photos = len(photos) if isinstance(photos, list) else int(bool(primary))
+    types = first(item, "deliveryTypes", "delivery_types") or []
+    lat, lon = first(item, "location.latitude"), first(item, "location.longitude")
+    distance = None
+    if config and isinstance(lat, int | float) and isinstance(lon, int | float):
+        b = config["buyer"]
+        distance = round(miles((lat, lon), (b["lat"], b["lon"])), 1)
+    posted = first(item, "timestamp", "creation_time")
     return {
         "listing_id": anon_id(source_id),
         "raw_title": str(title).strip(),
         "raw_description": desc.strip() if isinstance(desc, str) else "",
         "price": price,
-        "location_city": first(item, "location.reverse_geocode.city", "location.city") or "",
-        "delivery_type": delivery_type(first(item, "delivery_types", "delivery_type")),
+        "location_city": first(item, "locationText.text", "location.reverse_geocode.city") or "",
+        "delivery_type": delivery_type(first(item, "deliveryTypes", "delivery_types")),
         "has_clear_photo": n_photos > 0,
+        "photo_count": n_photos,
+        "listed_at": str(posted)[:10] if isinstance(posted, str) and posted[:4].isdigit() else None,
+        "distance_miles": distance,
+        "public_meetup": isinstance(types, list) and "PUBLIC_MEETUP" in types,
+        "pending": first(item, "isPending", "is_pending") is True,
+        # Facebook's generic label ("Used - like new"): only a hint for card identification,
+        # not stored in the listing.
+        "condition_label": first(item, "condition") or "",
     }
 
 
@@ -190,7 +266,10 @@ For every listing return:
 - number: the number before the slash, without leading zeros ("044/185" -> "44").
 - variant: normal, holo, reverse or 1st edition, if stated.
 - condition: NM, LP, MP, HP, DMG, or unknown. "Mint"/"pack fresh" -> NM, "light wear" -> LP,
-  "well loved"/"heavily played" -> HP, creases, bends or water damage -> DMG.
+  "well loved"/"heavily played" -> HP, creases, bends or water damage -> DMG. Only if the title
+  and description say nothing about condition, use facebook_condition (the seller's generic
+  label) as a weak hint: "New" -> NM, "Used - like new" -> LP, "Used - good" -> MP,
+  "Used - fair" -> HP.
 - graded/grade: true and the grade if the card is in a PSA, BGS or CGC slab.
 - language: two-letter code; "en" unless another language is stated.
 - is_lot: true for bundles, lots, binders, boxes, sealed product, or several different cards.
@@ -199,27 +278,72 @@ For every listing return:
 Return one entry per listing, with the same listing_id."""
 
 
-def extract_cards(llm: LLM, rows: list[dict], batch_size: int, log=print) -> dict[str, dict]:
-    """Identify the card in each row, `batch_size` listings per LLM call."""
+class IdentifiedCache:
+    """Cards the LLM has already identified, keyed by model and listing text, so a listing seen
+    in an earlier search (or an earlier ingest) isn't sent to the LLM again. On disk at
+    `ingest.identified_cache`; None turns it off. Changed text means a new key."""
+
+    def __init__(self, config: dict[str, Any]):
+        path = config["ingest"].get("identified_cache")
+        self.store = Cache(str(repo_path(path))) if path else None
+
+    @staticmethod
+    def key(model: str, row: dict) -> str:
+        blob = json.dumps([model, row["raw_title"], row["raw_description"],
+                           row.get("condition_label", "")], ensure_ascii=False)  # fmt: skip
+        return hashlib.sha256(blob.encode()).hexdigest()
+
+    def get(self, model: str, row: dict) -> dict | None:
+        return None if self.store is None else self.store.get(self.key(model, row))
+
+    def put(self, model: str, row: dict, card: dict) -> None:
+        if self.store is not None:
+            self.store[self.key(model, row)] = card
+
+
+def extract_cards(
+    llm: LLM,
+    rows: list[dict],
+    batch_size: int,
+    log=print,
+    parallel: int = 1,
+    cache: IdentifiedCache | None = None,
+    stats: dict | None = None,
+) -> dict[str, dict]:
+    """Identify the card in each row, `batch_size` listings per LLM call and up to `parallel`
+    calls at a time. Rows found in `cache` skip the LLM. `stats` gets the counts."""
     out: dict[str, dict] = {}
-    for i in range(0, len(rows), batch_size):
-        batch = [
-            {
-                "listing_id": r["listing_id"],
-                "title": r["raw_title"],
-                "description": r["raw_description"],
-            }
-            for r in rows[i : i + batch_size]
-        ]
-        prompt = (
-            "Listings (JSON):\n<listings>\n"
-            + json.dumps(batch, ensure_ascii=False)
-            + "\n</listings>"
-        )
+    todo = []
+    for r in rows:
+        hit = cache.get(llm.model, r) if cache else None
+        if hit is not None:
+            out[r["listing_id"]] = {**hit, "listing_id": r["listing_id"]}
+        else:
+            todo.append(r)
+    batches = [todo[i : i + batch_size] for i in range(0, len(todo), batch_size)]
+
+    def identify(batch: list[dict]) -> dict[str, dict]:
+        items = [{"listing_id": r["listing_id"], "title": r["raw_title"],
+                  "description": r["raw_description"],
+                  "facebook_condition": r.get("condition_label", "")} for r in batch]  # fmt: skip
+        prompt = "Listings (JSON):\n<listings>\n" + json.dumps(items, ensure_ascii=False)
+        prompt += "\n</listings>"
         res = llm.json(tag="extract", system=EXTRACT_SYSTEM, prompt=prompt, schema=ExtractionBatch)
-        out.update({c.listing_id: c.model_dump() for c in res.cards})
-        if log:
-            log(f"  identified cards in {min(i + batch_size, len(rows))}/{len(rows)} listings")
+        return {c.listing_id: c.model_dump() for c in res.cards}
+
+    done = len(out)
+    with ThreadPoolExecutor(max(1, parallel)) as pool:
+        for batch, found in zip(batches, pool.map(identify, batches), strict=True):
+            out.update(found)
+            for r in batch:
+                if r["listing_id"] in found and cache:
+                    cache.put(llm.model, r, found[r["listing_id"]])
+            done += len(batch)
+            if log:
+                log(f"  identified cards in {done}/{len(rows)} listings")
+    if stats is not None:
+        stats.update({"listings": len(rows), "from_cache": len(rows) - len(todo),
+                      "llm_calls": len(batches), "parallel": max(1, parallel)})  # fmt: skip
     return out
 
 
@@ -260,17 +384,112 @@ def apply_scope_filter(listings: list[CardListing]) -> tuple[list[CardListing], 
     return kept, dropped
 
 
-def write_review_sheet(listings: list[CardListing], config: dict[str, Any]) -> Path:
+GRADED_TITLE = re.compile(
+    r"\b(psa|bgs|cgc|sgc)\s*-?\s*(10|[1-9](\.5)?)\b(?!\s*(worthy|candidate|ready|potential))|"
+    r"\bslab(bed)?\b",
+    re.IGNORECASE,
+)
+LOT_TITLE = re.compile(
+    r"\b(lots?|bundle|binder|bulk|booster\s+(box|pack|bundle)s?|elite\s+trainer\s+box|etb|"
+    r"sealed\s+(box|pack|product|case)|\d{2,}\s*(cards|pcs))\b",
+    re.IGNORECASE,
+)
+FOREIGN_TITLE = re.compile(
+    r"\b(japanese|korean|chinese|french|german|spanish|italian|portuguese)\b", re.IGNORECASE
+)
+NOT_A_NAME = {"ex", "gx", "v", "vmax", "vstar", "lv", "x", "m", "mega", "team", "s", "the", "of"}
+
+
+def prefilter(rows: list[dict], card_name: str | None = None) -> tuple[list[dict], dict[str, int]]:
+    """Drop what the title already shows is out of scope, before any LLM call: graded slabs
+    ("PSA 9", not "PSA 10 worthy"), lots and sealed product, non-English cards. For a live
+    search (`card_name`), also listings whose title and description never name the card
+    (fuzzy, so "Charzard" still counts). Deliberately cautious: anything unclear goes on to
+    the LLM, and the scope filter after it."""
+    names = [t for t in re.findall(r"[a-z0-9]+", (card_name or "").lower())
+             if t not in NOT_A_NAME and len(t) >= 3]  # fmt: skip
+    kept, dropped = [], {}
+    for r in rows:
+        title, text = r["raw_title"], f"{r['raw_title']} {r['raw_description']}".lower()
+        if GRADED_TITLE.search(title):
+            reason = "graded"
+        elif LOT_TITLE.search(title):
+            reason = "is_lot"
+        elif FOREIGN_TITLE.search(title):
+            reason = "non_english"
+        elif names and not any(
+            fuzz.ratio(n, w) >= 80 for n in names for w in re.findall(r"[a-z0-9]+", text)
+        ):
+            reason = "other_card"
+        else:
+            kept.append(r)
+            continue
+        dropped[reason] = dropped.get(reason, 0) + 1
+    return kept, dropped
+
+
+def ingest_llm(config: dict[str, Any], default: LLM) -> LLM:
+    """The model that identifies cards: `ingest.llm` (a key under `models:`), else `default`."""
+    key = config["ingest"].get("llm")
+    return make_llm(config, key) if key else default
+
+
+def identify_listings(
+    config: dict[str, Any], llm: LLM, rows: list[dict], log=print, card_name: str | None = None
+) -> tuple[list[CardListing], dict[str, int], dict[str, Any]]:
+    """Anonymized rows -> (in-scope listings, dropped counts by reason, stats). The title
+    pre-filter (`ingest.prefilter`) drops the obvious cases without an LLM call; the rest is
+    identified in parallel batches (`ingest.parallel_calls`), reusing cards identified before
+    (`ingest.identified_cache`), then the scope filter runs."""
+    ing = config["ingest"]
+    pre: dict[str, int] = {}
+    if ing.get("prefilter", True):
+        rows, pre = prefilter(rows, card_name)
+    model = ingest_llm(config, llm)
+    stats: dict[str, Any] = {"model": model.model, "prefiltered": pre}
+    cache = IdentifiedCache(config) if model.provider != "offline" else None
+    extracted = extract_cards(model, rows, ing["batch_size"], log=log,
+                              parallel=int(ing.get("parallel_calls", 1)), cache=cache,
+                              stats=stats)  # fmt: skip
+    kept, dropped = apply_scope_filter(build_listings(rows, extracted))
+    for reason, n in pre.items():
+        dropped[reason] = dropped.get(reason, 0) + n
+    return kept, dropped, stats
+
+
+def review_reasons(
+    listings: list[CardListing], prices: dict[str, dict], mismatched: list[str], min_conf: float
+) -> dict[str, str]:
+    """listing_id -> why it needs a hand check: low confidence, no market price, or a name
+    that differs from the card TCGdex has at that set and number."""
+    out = {}
+    for x in listings:
+        why = []
+        if x.listing_id in mismatched:
+            why.append("name differs from TCGdex")
+        if x.confidence < min_conf:
+            why.append("low confidence")
+        if not (x.card_key and x.card_key in prices):
+            why.append("no market price")
+        if why:
+            out[x.listing_id] = "; ".join(why)
+    return out
+
+
+def write_review_sheet(
+    listings: list[CardListing], config: dict[str, Any], reasons: dict[str, str] | None = None
+) -> Path:
     """CSV for the hand check: fill in checked_ok, fix wrong rows in data/listings.json."""
-    min_conf = config["thresholds"]["extraction_confidence_review"]
+    reasons = reasons or {}
     out = repo_path(config["data"]["review_sheet"])
     cols = ["listing_id", "raw_title", "price", "card_name", "set_name", "set_code", "number",
             "variant", "condition", "confidence"]  # fmt: skip
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow([*cols, "needs_review", "checked_ok"])
+        w.writerow([*cols, "needs_review", "why", "checked_ok"])
         for x in listings:
-            w.writerow([getattr(x, c) for c in cols] + [x.confidence < min_conf, ""])
+            why = reasons.get(x.listing_id, "")
+            w.writerow([getattr(x, c) for c in cols] + [bool(why), why, ""])
     return out
 
 
@@ -280,6 +499,7 @@ class TCGdex:
     def __init__(self, base_url: str, timeout_s: float = 15):
         self.base = base_url.rstrip("/")
         self.http = httpx.Client(timeout=timeout_s, follow_redirects=True)
+        self._set_cards: dict[str, list[dict]] = {}
 
     def _get(self, url: str):
         r = self.http.get(url)
@@ -292,11 +512,23 @@ class TCGdex:
         return self._get(f"{self.base}/sets") or []
 
     def card(self, set_id: str, number: str) -> dict | None:
+        """The card at this set and number. Promo sets number their cards "XY121" or
+        "SWSH050"; if the plain number isn't found, the set's own card list is searched."""
         for local in dict.fromkeys([number, number.lstrip("0") or "0", number.zfill(3)]):
             data = self._get(f"{self.base}/cards/{set_id}-{local}")
             if data:
                 return data
+        digits = re.sub(r"\D", "", number).lstrip("0")
+        for c in self.set_cards(set_id):
+            if digits and re.sub(r"\D", "", str(c.get("localId", ""))).lstrip("0") == digits:
+                return self._get(f"{self.base}/cards/{c['id']}")
         return None
+
+    def set_cards(self, set_id: str) -> list[dict]:
+        if set_id not in self._set_cards:
+            data = self._get(f"{self.base}/sets/{set_id}") or {}
+            self._set_cards[set_id] = data.get("cards") or []
+        return self._set_cards[set_id]
 
     @staticmethod
     def price_entry(card: dict) -> dict:
@@ -323,12 +555,16 @@ SERIES_PREFIX = re.compile(
 )
 
 
-def resolve_set(name: str, sets: list[dict]) -> str | None:
-    """Map a set name to a TCGdex set id: exact match first, then a close fuzzy match.
+def resolve_set(name: str, sets: list[dict], aliases: dict[str, str] | None = None) -> str | None:
+    """Map a set name to a TCGdex set id: an alias from config (`tcgdex.set_aliases`) or an
+    exact match first, then a close fuzzy match.
 
     Exact-first matters: 'Base Set' must not resolve to 'Base Set 2'. Series prefixes are
     stripped, so 'Scarlet & Violet—151' finds '151'. A name that already is an id passes.
     """
+    alias = {k.casefold(): v for k, v in (aliases or {}).items()}.get(name.casefold().strip())
+    if alias:
+        return alias
     ids = {s["id"].casefold(): s["id"] for s in sets if s.get("id")}
     if name.casefold() in ids:
         return ids[name.casefold()]
@@ -339,6 +575,31 @@ def resolve_set(name: str, sets: list[dict]) -> str | None:
             return by_name[t.casefold()]
     hit = process.extractOne(name.casefold(), list(by_name), scorer=fuzz.ratio, score_cutoff=88)
     return by_name[hit[0]] if hit else None
+
+
+PRINTED_NUMBER = re.compile(r"\b\d{1,3}\s*/\s*(\d{2,3})\b")
+
+
+def printed_total(listing: CardListing) -> str | None:
+    """The set size printed after the card number ("231/182" -> "182"), if the text has one."""
+    m = PRINTED_NUMBER.search(f"{listing.raw_title} {listing.raw_description}")
+    return m.group(1).lstrip("0") if m else None
+
+
+def is_pocket_set(s: dict) -> bool:
+    """TCG Pocket (the phone game) sets are in TCGdex's list too; they are never on sale."""
+    return "/tcgp/" in f"{s.get('logo', '')}{s.get('symbol', '')}"
+
+
+def card_names_match(ours: str, theirs: str) -> bool:
+    """Same card despite spelling: "Charizard-EX" ~ "Charizard EX", "M Gengar EX" ~ "Mega
+    Gengar ex", "Charizard" ~ "Charizard ex". "M Gengar EX" vs "Purrloin" does not match."""
+
+    def norm(n: str) -> str:
+        n = re.sub(r"[^a-z0-9' ]", " ", n.lower().replace("-", " "))
+        return re.sub(r"\bmega\b", "m", n)
+
+    return fuzz.token_set_ratio(norm(ours), norm(theirs)) >= 80
 
 
 class PriceBook:
@@ -353,6 +614,8 @@ class PriceBook:
         self.client = client or TCGdex(config["tcgdex"]["base_url"], config["tcgdex"]["timeout_s"])
         self.prices_path = repo_path(config["data"]["prices"])
         self.sets_path = repo_path(config["data"]["tcgdex_sets"])
+        self.aliases = config["tcgdex"].get("set_aliases") or {}
+        self.mismatch_conf = float(config["ingest"]["name_mismatch_confidence"])
         self._sets: list[dict] | None = None
 
     def sets(self) -> list[dict]:
@@ -368,15 +631,70 @@ class PriceBook:
                 self.sets_path.write_text(json.dumps(self._sets, indent=1), encoding="utf-8")
         return self._sets
 
+    def sets_by_size(self) -> dict[str, list[str]]:
+        """Printed set size -> TCGdex set ids, e.g. "182" -> ["sv04", "sv10"]."""
+        out: dict[str, list[str]] = {}
+        for s in self.sets():
+            total = str((s.get("cardCount") or {}).get("official") or "")
+            if total and total != "0" and not is_pocket_set(s):
+                out.setdefault(total, []).append(s["id"])
+        return out
+
     def resolve_sets(self, listings: list[CardListing]) -> list[str]:
-        """Fill set_code from set_name. Returns the set names that could not be matched."""
+        """Fill set_code from set_name; if the printed set size ("231/182") fits exactly one
+        set, that set wins over the LLM's guess. Returns the set names that could not be
+        matched. Sizes shared by several sets are settled by verify_cards()."""
+        by_size = self.sets_by_size()
         unresolved = set()
         for x in listings:
             if x.set_code == "unknown" and x.set_name:
-                x.set_code = resolve_set(x.set_name, self.sets()) or "unknown"
-                if x.set_code == "unknown":
-                    unresolved.add(x.set_name)
+                x.set_code = resolve_set(x.set_name, self.sets(), self.aliases) or "unknown"
+            ids = by_size.get(printed_total(x) or "", [])
+            if len(ids) == 1 and x.set_code != ids[0]:
+                x.set_code = ids[0]
+            if x.set_code == "unknown" and x.set_name:
+                unresolved.add(x.set_name)
         return sorted(unresolved)
+
+    def verify_cards(self, listings: list[CardListing]) -> tuple[list[str], list[str]]:
+        """Check each card against TCGdex. Run after ensure_prices().
+
+        A listing whose name differs from the card TCGdex has at its set and number (e.g.
+        "Sabrina's Gengar" at gym2-14, which is Rocket's Mewtwo), or whose set is unknown,
+        is tried in every set with its printed size: the set that has this card at this
+        number wins (Sabrina's Gengar is gym1-14). If none does, its set is cleared, so it
+        gets no market price, and its confidence is capped for the hand check.
+        Returns (fixed ids, mismatched ids)."""
+        by_size = self.sets_by_size()
+        fixed, bad = [], []
+        for x in listings:
+            entry = self.prices.get(x.card_key or "")
+            named_wrong = bool(entry and entry.get("name")) and not card_names_match(
+                x.card_name, entry["name"]
+            )
+            unknown_set = x.set_code == "unknown" and x.number != "unknown"
+            if not (named_wrong or unknown_set):
+                continue
+            for set_id in by_size.get(printed_total(x) or "", []):
+                if set_id == x.set_code:
+                    continue
+                try:
+                    card = self.client.card(set_id, x.number)
+                except httpx.HTTPError:
+                    card = None
+                if card and card_names_match(x.card_name, card.get("name") or ""):
+                    x.set_code = set_id
+                    price = TCGdex.price_entry(card)
+                    if price["variants"]:
+                        self.prices.setdefault(x.card_key, price)
+                    fixed.append(x.listing_id)
+                    break
+            else:
+                if named_wrong:
+                    bad.append(x.listing_id)
+                    x.set_code = "unknown"
+                    x.confidence = min(x.confidence, self.mismatch_conf)
+        return fixed, bad
 
     def ensure_prices(self, listings: list[CardListing], pause_s: float = 0.2) -> list[str]:
         """Fetch prices for cards not cached yet. Returns card keys with no TCGplayer price."""
@@ -422,27 +740,34 @@ def run_ingest(
     log=print,
 ) -> dict[str, Any]:
     """Raw Apify items -> data/listings.json (+ prices, + review sheet). Returns a summary."""
-    rows = [r for r in (anonymize(i) for i in raw_items) if r]
+    rows = [r for r in (anonymize(i, config) for i in raw_items) if r]
     log(f"{len(raw_items)} raw items -> {len(rows)} usable listings")
-    extracted = extract_cards(llm, rows, config["ingest"]["batch_size"], log=log)
-    kept, dropped = apply_scope_filter(build_listings(rows, extracted))
-    log(f"in scope: {len(kept)}, dropped: {dropped}")
+    kept, dropped, stats = identify_listings(config, llm, rows, log=log)
+    log(f"in scope: {len(kept)}, dropped: {dropped} (before the LLM: {stats['prefiltered']}), "
+        f"{stats['from_cache']} identified earlier, {stats['llm_calls']} LLM calls")  # fmt: skip
     summary: dict[str, Any] = {
         "raw": len(raw_items),
         "usable": len(rows),
         "kept": len(kept),
         "dropped": dropped,
+        "identify": stats,
     }
+    mismatched: list[str] = []
     if pricebook is not None:
         summary["unresolved_sets"] = pricebook.resolve_sets(kept)
         summary["unpriced"] = pricebook.ensure_prices(kept)
+        fixed, mismatched = pricebook.verify_cards(kept)
+        summary["set_fixed"], summary["name_mismatch"] = fixed, mismatched
         pricebook.save()
-        log(f"prices: {len(summary['unpriced'])} cards without a TCGplayer price")
+        log(f"prices: {len(summary['unpriced'])} cards without a TCGplayer price, "
+            f"sets fixed by TCGdex {len(fixed)}, names matching no card {len(mismatched)}")  # fmt: skip
     save_listings(kept, out_path or repo_path(config["data"]["listings"]))
-    write_review_sheet(kept, config)
     min_conf = config["thresholds"]["extraction_confidence_review"]
-    summary["needs_review"] = [x.listing_id for x in kept if x.confidence < min_conf]
-    log(f"rows needing a hand check (confidence < {min_conf}): {len(summary['needs_review'])}")
+    prices = pricebook.prices if pricebook is not None else {}
+    reasons = review_reasons(kept, prices, mismatched, min_conf)
+    write_review_sheet(kept, config, reasons)
+    summary["needs_review"] = list(reasons)
+    log(f"rows needing a hand check: {len(reasons)}")
     return summary
 
 
@@ -455,6 +780,14 @@ class MarketData:
     red_flags: list[RedFlag]
     source: str  # "samples", "snapshot" or "live"
     meta: dict = field(default_factory=dict)
+
+
+def real_prices(config: dict[str, Any]) -> dict[str, dict]:
+    """data/prices.json (TCGdex market prices), never the sample prices."""
+    p = repo_path(config["data"]["prices"])
+    prices = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    prices.pop("_meta", None)
+    return prices
 
 
 def _read_listings(p: Path) -> list[CardListing]:
@@ -500,6 +833,19 @@ CONDITION_PATTERNS = [
     (r"\b(hp|heavily played|well loved|played)\b", "HP"),
     (r"\b(dmg|damaged|crease|creased|bent|water damage)\b", "DMG"),
 ]
+
+
+def set_display_name(code: str | None, config: dict[str, Any]) -> str | None:
+    """A set id as people say it ("base1" -> "Base Set"), from the cached TCGdex set list;
+    anything else comes back unchanged."""
+    if not code:
+        return code
+    path = repo_path(config["data"]["tcgdex_sets"])
+    if path.exists():
+        for s in json.loads(path.read_text(encoding="utf-8")):
+            if s.get("id", "").casefold() == code.casefold():
+                return s.get("name") or code
+    return code
 
 
 def between(prompt: str, tag: str) -> str:

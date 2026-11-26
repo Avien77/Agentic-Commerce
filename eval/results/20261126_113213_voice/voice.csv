@@ -1,0 +1,41 @@
+query_id,voice,arm,service,reference,transcript,stt_s,wer,entity_recall
+S01,en-US-AvaNeural,vocabulary,groq,Base Set Charizard under $400,Base Set Charizard under $400,0.481,0.0,1.0
+S01,en-US-AvaNeural,no_vocabulary,groq,Base Set Charizard under $400,Base Set Charizard under $400,0.354,0.0,1.0
+S01,en-US-GuyNeural,vocabulary,groq,Base Set Charizard under $400,Base Set Charizard Under $400,0.307,0.0,1.0
+S01,en-US-GuyNeural,no_vocabulary,groq,Base Set Charizard under $400,Base Set Charizard Under $400,0.285,0.0,1.0
+S01,en-GB-RyanNeural,vocabulary,groq,Base Set Charizard under $400,Base Set Charizard under $400,0.482,0.0,1.0
+S01,en-GB-RyanNeural,no_vocabulary,groq,Base Set Charizard under $400,Bayset Charizard under $400,0.276,0.4,0.667
+S01,en-IN-NeerjaNeural,vocabulary,groq,Base Set Charizard under $400,"Base Set, Charizard, under $400",0.383,0.0,1.0
+S01,en-IN-NeerjaNeural,no_vocabulary,groq,Base Set Charizard under $400,Bayes set Charizard under $400.,0.291,0.2,0.667
+S03,en-US-AvaNeural,vocabulary,groq,Venusaur base set holo under $110,Venusaur Base Set Holo Under $110,0.607,0.0,1.0
+S03,en-US-AvaNeural,no_vocabulary,groq,Venusaur base set holo under $110,Venusaur Base Set Holo Under $110,0.32,0.0,1.0
+S03,en-US-GuyNeural,vocabulary,groq,Venusaur base set holo under $110,Venusaur Base Set Hollow Under $110,0.341,0.1667,1.0
+S03,en-US-GuyNeural,no_vocabulary,groq,Venusaur base set holo under $110,Venusaur Base Set Hollow Under $110,0.358,0.1667,1.0
+S03,en-GB-RyanNeural,vocabulary,groq,Venusaur base set holo under $110,VENUSAUR BASE SET HOLO UNDER $110,0.36,0.0,1.0
+S03,en-GB-RyanNeural,no_vocabulary,groq,Venusaur base set holo under $110,Venusaur Base Set Holo under $110,0.341,0.0,1.0
+S03,en-IN-NeerjaNeural,vocabulary,groq,Venusaur base set holo under $110,VENUSAUR BASE SET HOLO UNDER $110,0.426,0.0,1.0
+S03,en-IN-NeerjaNeural,no_vocabulary,groq,Venusaur base set holo under $110,Venuesor base set Holo under $110.,0.303,0.1667,0.667
+S05,en-US-AvaNeural,vocabulary,groq,"Pikachu from Base Set, under $15","Pikachu from base set, under $15",0.352,0.0,1.0
+S05,en-US-AvaNeural,no_vocabulary,groq,"Pikachu from Base Set, under $15",Pikachu from base set under $15,0.3,0.0,1.0
+S05,en-US-GuyNeural,vocabulary,groq,"Pikachu from Base Set, under $15","Pikachu from base set, under $15",0.328,0.0,1.0
+S05,en-US-GuyNeural,no_vocabulary,groq,"Pikachu from Base Set, under $15","Pikachu from base set, under $15.",0.296,0.0,1.0
+S05,en-GB-RyanNeural,vocabulary,groq,"Pikachu from Base Set, under $15","PIKachu from Base Set, under $15",3.73,0.0,1.0
+S05,en-GB-RyanNeural,no_vocabulary,groq,"Pikachu from Base Set, under $15","Pikachu from Base Set, under $15.",3.9,0.0,1.0
+S05,en-IN-NeerjaNeural,vocabulary,groq,"Pikachu from Base Set, under $15","Pikachu from base set, under $15",3.726,0.0,1.0
+S05,en-IN-NeerjaNeural,no_vocabulary,groq,"Pikachu from Base Set, under $15",Pikachu from base set under $15,3.505,0.0,1.0
+S07,en-US-AvaNeural,vocabulary,groq,Mew ex 151 special illustration under $65,New X 151 Special Illustration under $65,3.76,0.2857,0.667
+S07,en-US-AvaNeural,no_vocabulary,groq,Mew ex 151 special illustration under $65,New X-151 Special Illustration under $65,3.869,0.2857,0.667
+S07,en-US-GuyNeural,vocabulary,groq,Mew ex 151 special illustration under $65,NUICS 151 Special Illustration Under $65,3.507,0.2857,0.667
+S07,en-US-GuyNeural,no_vocabulary,groq,Mew ex 151 special illustration under $65,Nuwix 151 Special Illustration Under $65,3.6,0.2857,0.667
+S07,en-GB-RyanNeural,vocabulary,groq,Mew ex 151 special illustration under $65,New X-151 Special Illustration under $65,3.665,0.2857,0.667
+S07,en-GB-RyanNeural,no_vocabulary,groq,Mew ex 151 special illustration under $65,New X-151 Special Illustration under $65,3.691,0.2857,0.667
+S07,en-IN-NeerjaNeural,vocabulary,groq,Mew ex 151 special illustration under $65,"Mew ex, 151 Special Illustration under $65",3.745,0.0,1.0
+S07,en-IN-NeerjaNeural,no_vocabulary,groq,Mew ex 151 special illustration under $65,Muex 151 Special Illustration under $65,3.891,0.2857,0.667
+S09,en-US-AvaNeural,vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia V Alt Art from Silver Tempest under $120,3.676,0.0,1.0
+S09,en-US-AvaNeural,no_vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia V Alt Art from Silver Tempest under $120,3.583,0.0,1.0
+S09,en-US-GuyNeural,vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia V Altart from Silver Tempest under $120,3.533,0.2222,1.0
+S09,en-US-GuyNeural,no_vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia V Altart from Silver Tempest under $120,3.548,0.2222,1.0
+S09,en-GB-RyanNeural,vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia V Altart from Silver Tempest under $120,3.701,0.2222,1.0
+S09,en-GB-RyanNeural,no_vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia V Altart from Silver Tempest under $120,3.686,0.2222,1.0
+S09,en-IN-NeerjaNeural,vocabulary,groq,Lugia V alt art from Silver Tempest under $120,"Lugia V, Altart from Silver Tempest under 120 dollars",3.572,0.2222,1.0
+S09,en-IN-NeerjaNeural,no_vocabulary,groq,Lugia V alt art from Silver Tempest under $120,Lugia we all tart from Silver Tempest under $120.,3.671,0.3333,1.0

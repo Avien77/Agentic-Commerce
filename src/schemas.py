@@ -47,6 +47,13 @@ class CardListing(BaseModel):
     shipping: float | None = Field(default=None, ge=0.0)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
 
+    # Listing signals for the trust and convenience scores (None: not known, e.g. samples)
+    photo_count: int | None = None
+    listed_at: str | None = None  # date the listing was posted, "YYYY-MM-DD"
+    distance_miles: float | None = None  # from the buyer's city (config `buyer`)
+    public_meetup: bool = False  # the seller offers to meet in public
+    pending: bool = False  # Facebook marks the item as pending a sale
+
     # Evaluation metadata (traps & decoys)
     synthetic: bool = False
     split: Literal["dev", "test"] | None = None
@@ -96,6 +103,8 @@ class EvaluatedListing(BaseModel):
     risk_reasons: list[str] = Field(default_factory=list)
     warning: str | None = None
     landed_cost: LandedCostResult | None = None
-    utility_score: float | None = None
+    utility_score: float | None = None  # 0-1; the spoken "score" is this times 100
+    score_parts: dict[str, float] = Field(default_factory=dict)  # each part of the score, 0-1
+    reasons: list[str] = Field(default_factory=list)  # why it scored well, in spoken words
     rejected: bool = False
     rejection_reason: str | None = None

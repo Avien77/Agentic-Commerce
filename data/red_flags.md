@@ -2,7 +2,7 @@
 
 Starter entries for the scam check (plan section 4, step 5). Keep the format exactly as below:
 `## <ID> <title>`, then `severity`, `patterns` (comma-separated, lowercase), `why`, `source`.
-Severity `high` sets r_text to 1.0, `medium` to 0.5 (config.yaml: risk.severity_score).
+Severity `high` sets r_text to 1.0, `medium` to 0.5 (config.yaml: thresholds.red_flag_severity).
 
 TODO before the data freeze: grow this to 30–40 entries written in your own words, and fill
 in `source` with the link each entry is based on (scam-awareness posts, marketplace safety

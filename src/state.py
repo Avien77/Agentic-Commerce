@@ -9,6 +9,7 @@ from src.schemas import CardListing, EvaluatedListing, ParsedQuery
 GraphStage = Literal[
     "INTENT",
     "CLARIFY",
+    "CONFIRM",
     "SEARCHING",
     "EVALUATING",
     "RANKING",
@@ -33,6 +34,12 @@ class AgentState(TypedDict, total=False):
     clarifying_question: str | None
     clarify_answer: str | None
 
+    # Platform Agent (CONFIRM): the request read back before searching
+    confirm_first: bool  # set by ChatSession: read the request back before searching
+    confirm_count: int
+    confirm_question: str | None
+    confirmed: bool  # the buyer said yes: the next run starts at SEARCHING
+
     # Merchant Agent (SEARCHING & EVALUATING)
     search_retry_count: int
     relaxed_filters: bool
@@ -54,6 +61,7 @@ class AgentState(TypedDict, total=False):
     number_check_error: str | None
     final_response: str | None
     response_source: str | None  # "llm" or "template"
+    sample_note_said: bool  # set by ChatSession: the sample-data note was already given
 
     # Telemetry & logging
     stage_timings: dict[str, float]

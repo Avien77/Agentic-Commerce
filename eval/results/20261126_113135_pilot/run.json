@@ -1,0 +1,15 @@
+{
+ "label": "pilot",
+ "started": "20261126_113135",
+ "split": "dev",
+ "repeats": 1,
+ "variants": [
+  "full"
+ ],
+ "model_override": "small",
+ "items": 26,
+ "benchmark": "/Users/gmahlawat/Documents/Agentic-Commerce/eval/data",
+ "cache": true,
+ "cost_usd": 0.0073,
+ "finished": "20261126_113816"
+}

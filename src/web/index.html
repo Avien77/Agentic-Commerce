@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Agentic Commerce · live</title>
+<!-- The local web page (notebook 10, src/ui.py serves it). Hand-written: plain HTML, CSS and
+     JavaScript, no build step and nothing loaded from the internet except card pictures. -->
+<style>
+:root {
+  /* Dark theme: a night-time card table. The old navy ink is now the panels; the green felt
+     and the yellow price sticker carry over, lightened where text sits on them. */
+  color-scheme: dark;
+  --paper: #121827;
+  --sheet: #1b2236;
+  --ink: #e8ebf2;
+  --muted: #a4acbe;
+  --faint: #868fa4;
+  --line: #2d3651;
+  --felt: #55c79b;
+  --felt-soft: #173a30;
+  --on-felt: #0c2219;
+  --tag: #f4c430;
+  --tag-ink: #3b2d00;
+  --alert: #ff8597;
+  --alert-soft: #3b1c26;
+  --you: #2f3d66;
+  --solid: #e8ebf2;
+  --on-solid: #121827;
+  --hover: #232b42;
+  --inset: #161c2c;
+  --bar: #8e98ae;
+  --face: "Gill Sans", "Gill Sans MT", "Gill Sans Nova", Seravek, Calibri, "Trebuchet MS", sans-serif;
+  --data: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --r-card: 4.6% / 3.3%;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.45 var(--face);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--felt); text-underline-offset: 2px; }
+a:hover { color: var(--ink); }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--felt); outline-offset: 2px; border-radius: 3px; }
+.num { font-family: var(--data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.hidden { display: none !important; }
+
+/* ---------- frame */
+.app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+header.bar {
+  display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap;
+  padding: 12px 24px; border-bottom: 1px solid var(--line); background: var(--sheet);
+}
+.brand { font-size: 20px; font-weight: 600; letter-spacing: 0.01em; }
+.brand small { font-weight: 400; color: var(--muted); font-size: 15px; margin-left: 6px; }
+.run { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 14px; margin-left: auto; }
+.run b { color: var(--ink); font-weight: 600; }
+.link-state::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--faint); margin-right: 6px; vertical-align: 1px;
+}
+.link-state.on::before { background: var(--felt); }
+.link-state.off::before { background: var(--alert); }
+
+.split { display: grid; grid-template-columns: minmax(320px, 400px) 1fr; min-height: 0; }
+
+/* ---------- conversation */
+.talk { display: flex; flex-direction: column; min-height: 0; background: var(--sheet); border-right: 1px solid var(--line); }
+.talk h2, .work h2 { font-size: 15px; font-weight: 600; margin: 0; color: var(--muted); }
+.lines { flex: 1; overflow-y: auto; padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 92%; padding: 9px 13px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.assistant { background: var(--paper); border-top-left-radius: 4px; align-self: flex-start; }
+.msg.user { background: var(--you); color: var(--ink); border-top-right-radius: 4px; align-self: flex-end; }
+.msg .via { display: block; font-size: 12px; opacity: 0.7; margin-top: 3px; }
+.said { align-self: flex-start; font-size: 14px; color: var(--felt); padding-left: 4px; }
+.said::before { content: "\201C"; }
+.said::after { content: "\201D"; }
+.msg.error { background: var(--alert-soft); color: var(--alert); align-self: stretch; max-width: none; border-radius: 8px; }
+.typing { align-self: flex-start; display: flex; gap: 4px; padding: 12px 14px; background: var(--paper); border-radius: 14px; border-top-left-radius: 4px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--felt); opacity: 0.35; animation: blink 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: 0.2s; }
+.typing i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 40% { opacity: 1; } }
+.quick { display: flex; gap: 8px; padding: 0 20px 8px; flex-wrap: wrap; }
+.quick button {
+  border: 1px solid var(--felt); background: var(--felt-soft); color: var(--felt);
+  border-radius: 999px; padding: 4px 14px; cursor: pointer;
+}
+.quick button:hover { background: var(--felt); color: var(--on-felt); }
+form.say { display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
+form.say textarea {
+  flex: 1; resize: none; height: 46px; max-height: 140px; padding: 10px 12px; overflow-y: hidden;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+}
+form.say textarea:focus { background: var(--inset); border-color: var(--felt); outline: none; }
+form.say button[type="submit"] {
+  border: 0; background: var(--solid); color: var(--on-solid); border-radius: 10px; padding: 0 18px; cursor: pointer; font-weight: 600;
+}
+form.say button:disabled { background: var(--faint); cursor: wait; }
+.talk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 20px 8px; }
+.talk-head h2 { padding: 0; }
+.aloud { border: 1px solid var(--line); background: var(--sheet); border-radius: 999px; padding: 2px 10px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.aloud[aria-pressed="true"] { border-color: var(--felt); color: var(--felt); background: var(--felt-soft); }
+.speaking { display: flex; align-items: center; gap: 10px; margin: 0 20px 8px; font-size: 14px; color: var(--felt); }
+.speaking .bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; }
+.speaking .bars i { width: 3px; background: var(--felt); animation: talkbar 0.9s infinite ease-in-out; }
+.speaking .bars i:nth-child(2) { animation-delay: 0.15s; }
+.speaking .bars i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes talkbar { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+.speaking button { border: 1px solid var(--felt); background: transparent; color: var(--felt); border-radius: 999px; padding: 1px 10px; cursor: pointer; font-size: 13px; }
+.mic {
+  --level: 0; flex: none; width: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper);
+  display: grid; place-items: center; cursor: pointer; color: var(--ink); transition: box-shadow 0.08s linear;
+}
+.mic svg { width: 20px; height: 20px; }
+.mic:hover { border-color: var(--felt); color: var(--felt); }
+.mic.on { background: var(--felt); border-color: var(--felt); color: var(--on-felt); box-shadow: 0 0 0 calc(3px + var(--level) * 14px) rgba(85, 199, 155, 0.25); }
+.mic:disabled { opacity: 0.45; cursor: wait; }
+.typing.status { gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
+.voice-note { padding: 14px 20px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+.voice-note b { color: var(--ink); }
+
+/* ---------- the work side */
+.work { overflow-y: auto; padding: 20px 28px 48px; min-width: 0; }
+.work section { margin-bottom: 28px; }
+.work section > h2 { margin-bottom: 10px; }
+
+/* agents at work: a real sequence of graph steps */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 0; }
+.steps li { display: flex; align-items: center; font-size: 15px; }
+.steps li + li::before { content: ""; width: 22px; height: 1px; background: var(--line); margin: 0 8px; }
+.step { display: inline-flex; align-items: baseline; gap: 7px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--sheet); }
+.step .t { font-family: var(--data); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.step.running { border-color: var(--felt); color: var(--felt); background: var(--felt-soft); }
+.step.running::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--felt); align-self: center; animation: pulse 1s infinite; }
+@keyframes pulse { 50% { transform: scale(0.55); opacity: 0.5; } }
+.step.done::before { content: "\2713"; color: var(--felt); font-size: 13px; }
+.sub { list-style: none; margin: 10px 0 0; padding: 0 0 0 4px; font-size: 15px; color: var(--muted); }
+.sub li { padding: 2px 0 2px 16px; position: relative; }
+.sub li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 6px; height: 1px; background: var(--faint); }
+.sub b { color: var(--ink); font-weight: 600; }
+.turn-total { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.request { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { font-size: 14px; padding: 3px 10px; border-radius: 6px; background: var(--sheet); border: 1px solid var(--line); }
+.chip span { color: var(--muted); margin-right: 5px; }
+.idle { color: var(--muted); }
+
+/* search tabs */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
+.tabs button { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 4px 12px; cursor: pointer; font-size: 14px; }
+.tabs button[aria-selected="true"] { background: var(--solid); color: var(--on-solid); border-color: var(--solid); }
+.results-head { font-size: 22px; line-height: 1.25; margin: 0 0 4px; font-weight: 600; max-width: 60ch; }
+.results-sub { color: var(--muted); font-size: 15px; margin: 0 0 18px; }
+
+/* funnel: also a sequence */
+.funnel { display: grid; grid-template-columns: minmax(150px, 230px) 1fr; gap: 5px 14px; align-items: center; max-width: 760px; }
+.funnel .label { font-size: 15px; }
+.funnel .label small { display: block; color: var(--faint); font-size: 13px; line-height: 1.25; }
+.bar-track { display: flex; align-items: center; gap: 8px; }
+.bar-fill { height: 12px; background: var(--bar); border-radius: 2px; min-width: 3px; }
+.funnel .last .bar-fill { background: var(--felt); }
+.bar-track .num { font-size: 14px; }
+.dropped { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; color: var(--muted); }
+.dropped b { color: var(--ink); font-family: var(--data); font-variant-numeric: tabular-nums; margin-right: 4px; }
+
+/* the showcase: the top pick, like a card on display */
+.showcase { display: grid; grid-template-columns: 220px 1fr; gap: 28px; background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+.sleeve { position: relative; align-self: start; }
+.sleeve .art {
+  position: relative; aspect-ratio: 63 / 88; border-radius: var(--r-card); overflow: hidden;
+  background: linear-gradient(160deg, #283250, #1d2439); box-shadow: 0 0 0 6px #2a3350, 0 0 0 7px #3a4566, 0 16px 30px -12px rgba(0, 0, 0, 0.7);
+  display: grid; place-items: center; color: var(--muted); font-size: 14px; text-align: center;
+}
+.sleeve .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sleeve .art .shine {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 140, 220, 0.55) 42%, rgba(120, 220, 255, 0.55) 50%, rgba(255, 245, 140, 0.5) 58%, transparent 70%);
+  background-size: 250% 250%; background-position: var(--sx, 50%) var(--sy, 50%); transition: opacity 0.25s;
+}
+.sleeve:hover .art .shine { opacity: 0.8; }
+.sticker {
+  position: absolute; right: -14px; top: 18px; transform: rotate(4deg);
+  background: var(--tag); color: var(--tag-ink); padding: 6px 12px 7px; border-radius: 6px;
+  box-shadow: 0 3px 10px -3px rgba(0, 0, 0, 0.6); text-align: right; line-height: 1.1;
+}
+.sticker .num { font-size: 26px; font-weight: 700; display: block; }
+.sticker small { font-size: 12px; }
+.pick-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.pick-head h3 { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 600; }
+.pick-title { color: var(--muted); margin: 4px 0 14px; font-size: 15px; max-width: 70ch; }
+.score { margin-left: auto; text-align: right; }
+.score .num { font-size: 30px; font-weight: 700; line-height: 1; }
+.score small { display: block; font-size: 13px; color: var(--muted); }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.badge { font-size: 14px; padding: 2px 9px; border-radius: 5px; border: 1px solid var(--line); }
+.badge.cond { border-color: var(--ink); font-weight: 600; }
+.badge.rare { background: var(--paper); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px 24px; }
+.fact h4 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.fact p { margin: 0; font-size: 15px; }
+.fact p + p { margin-top: 2px; }
+.fact .big { font-size: 19px; }
+.deal-good { color: var(--felt); font-weight: 600; }
+.deal-high { color: var(--alert); font-weight: 600; }
+.why { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.why li { background: var(--felt-soft); color: var(--felt); padding: 3px 10px; border-radius: 999px; font-size: 14px; }
+.warn { margin-top: 14px; background: var(--alert-soft); color: var(--alert); padding: 8px 12px; border-radius: 8px; font-size: 15px; }
+.parts { display: grid; grid-template-columns: 110px 1fr 70px; gap: 4px 10px; align-items: center; font-size: 14px; max-width: 420px; }
+.parts .track { height: 7px; background: var(--paper); border-radius: 4px; overflow: hidden; }
+.parts .track i { display: block; height: 100%; background: var(--bar); }
+.parts .w { color: var(--faint); font-size: 12px; text-align: right; }
+.links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; font-size: 15px; }
+
+.alts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 14px; }
+.alt { display: grid; grid-template-columns: 64px 1fr; gap: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); cursor: pointer; text-align: left; }
+.alt:hover { border-color: var(--ink); }
+.alt .art { aspect-ratio: 63 / 88; border-radius: var(--r-card); overflow: hidden; background: var(--paper); }
+.alt .art img { width: 100%; height: 100%; object-fit: cover; }
+.alt h4 { margin: 0; font-size: 17px; font-weight: 600; }
+.alt p { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+.alt .price { color: var(--ink); font-size: 16px; }
+
+/* table */
+.table-tools { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.table-tools input { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; min-width: 260px; background: var(--sheet); }
+.table-wrap { overflow-x: auto; background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 8px 9px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+th { font-weight: 600; color: var(--muted); background: var(--sheet); position: sticky; top: 0; }
+th button { all: unset; cursor: pointer; }
+th button:focus-visible { outline: 2px solid var(--felt); }
+th[aria-sort="ascending"] button::after { content: " \25B4"; }
+th[aria-sort="descending"] button::after { content: " \25BE"; }
+td.r, th.r { text-align: right; }
+td .num { font-size: 14px; }
+tbody tr.row { cursor: pointer; }
+tbody tr.row:hover td { background: var(--hover); }
+tbody tr.row.open td { background: var(--felt-soft); }
+tr.row.spoken td:first-child { box-shadow: inset 3px 0 0 var(--tag); }
+td.card-cell { display: flex; align-items: center; gap: 10px; white-space: normal; min-width: 180px; }
+td.card-cell .thumb { width: 30px; aspect-ratio: 63 / 88; border-radius: var(--r-card); overflow: hidden; background: var(--paper); flex: none; }
+td.card-cell .thumb img { width: 100%; height: 100%; object-fit: cover; }
+td.card-cell b { font-weight: 600; display: block; font-size: 15px; }
+td.card-cell small { color: var(--muted); }
+tr.detail td { white-space: normal; background: var(--inset); padding: 16px 18px 20px; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; }
+.desc { font-size: 14px; color: var(--muted); max-width: 70ch; white-space: pre-wrap; margin: 4px 0 0; }
+details.cut { margin-top: 16px; }
+details.cut summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.empty { color: var(--muted); font-size: 16px; max-width: 52ch; padding: 28px 0; }
+.empty b { color: var(--ink); }
+.check { background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; max-width: 640px; }
+.check .num.big { font-size: 34px; font-weight: 700; }
+
+.fresh { animation: arrive 0.5s ease-out; }
+@keyframes arrive { from { opacity: 0; transform: translateY(6px); } }
+
+@media (max-width: 980px) {
+  .app { height: auto; }
+  .split { grid-template-columns: 1fr; }
+  .talk { border-right: 0; border-bottom: 1px solid var(--line); max-height: 70vh; }
+  .showcase { grid-template-columns: 1fr; }
+  .sleeve { max-width: 220px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand">Agentic Commerce<small>card shopping assistant, live</small></div>
+    <div class="run">
+      <span>Listings: <b id="run-listings">…</b></span>
+      <span>Model: <b id="run-model">…</b></span>
+      <span class="link-state" id="link">Connecting</span>
+    </div>
+  </header>
+
+  <div class="split">
+    <aside class="talk" aria-label="Conversation">
+      <div class="talk-head">
+        <h2>Conversation</h2>
+        <button type="button" class="aloud hidden" id="aloud" aria-pressed="true" title="Read replies to spoken messages aloud">Read aloud: on</button>
+      </div>
+      <div class="lines" id="lines" aria-live="polite"></div>
+      <div class="quick hidden" id="quick"></div>
+      <div class="speaking hidden" id="speaking"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>Speaking<button type="button" id="hush">Stop</button></div>
+      <form class="say hidden" id="say">
+        <button type="button" class="mic hidden" id="mic" aria-pressed="false" aria-label="Talk: click, speak, click again to send" title="Talk: click, speak, click again to send (Esc cancels)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5"/></svg>
+        </button>
+        <textarea id="text" rows="1" placeholder="Ask for a card" aria-label="Message"></textarea>
+        <button type="submit" id="send">Send</button>
+      </form>
+      <div class="voice-note hidden" id="voice-note">
+        Voice mode: press <b>Enter</b> in the terminal to talk. Everything said shows up here.
+      </div>
+    </aside>
+
+    <main class="work">
+      <section aria-labelledby="h-activity">
+        <h2 id="h-activity">What the agents are doing</h2>
+        <div id="activity"><p class="idle">Waiting for the first message.</p></div>
+      </section>
+      <section aria-labelledby="h-results">
+        <h2 id="h-results">Search results</h2>
+        <div id="results">
+          <p class="empty">Ask for a card and the best listings show up here: the price and total, the seller's
+            location and when it was listed, the card's rarity, its market value and where that value comes from,
+            and why each listing ranks where it does.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ------------------------------------------------------------------ small helpers
+const $ = (id) => document.getElementById(id);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid === null || kid === undefined || kid === false) continue;
+    el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const money = (v) => (v === null || v === undefined ? "—" : usd.format(v));
+const safeUrl = (u) => (typeof u === "string" && /^https?:\/\//.test(u) ? u : null);
+const outLink = (url, text) => (safeUrl(url) ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, text) : null);
+function shortDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso + "T12:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+function ago(days) {
+  if (days === null || days === undefined) return null;
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 60) return `${days} days ago`;
+  return `${Math.round(days / 30)} months ago`;
+}
+const CONDITIONS = { NM: "Near mint", LP: "Lightly played", MP: "Moderately played", HP: "Heavily played", DMG: "Damaged", unknown: "Condition not stated" };
+const COND_ORDER = { DMG: 0, HP: 1, MP: 2, LP: 3, NM: 4, unknown: -1 };
+const DELIVERY = { in_person: "Local pickup", shipping: "Ships", unknown: "Pickup or shipping not stated" };
+const PERSONA = { budget_parent: "Budget buyer", serious_collector: "Serious collector", cautious_buyer: "Cautious buyer" };
+const PART = { deal: "Deal", condition: "Condition", trust: "Trust", convenience: "Convenience", confidence: "Identification" };
+const STEP = {
+  INTENT: "Understand the request", CLARIFY: "Ask a question", CONFIRM: "Read it back",
+  SEARCHING: "Search listings", EVALUATING: "Check prices and red flags", RANKING: "Score and rank",
+  RESPONDING: "Write the reply", DONE: "Save to memory",
+};
+function raritySymbol(r) {
+  if (!r) return "";
+  const s = r.toLowerCase();
+  if (s === "common") return "●";
+  if (s.includes("uncommon")) return "◆";
+  const n = s.includes("hyper") ? 3 : (s.includes("double") || s.includes("ultra") || s.includes("special") || s.includes("secret")) ? 2 : 1;
+  return "★".repeat(n);
+}
+const img = (card, size) => (safeUrl(card && card.image) ? `${card.image}/${size}.webp` : null);
+function art(card, size, cls) {
+  const box = h("div", { class: cls || "art" });
+  const src = img(card, size);
+  const label = size === "high" ? (card && card.number && card.number !== "unknown" ? `#${card.number}` : "No picture") : "";
+  const fallback = () => box.replaceChildren(h("span", {}, label));
+  if (src) {
+    const pic = h("img", { src, alt: `${card.name} card`, loading: "lazy", onerror: fallback });
+    box.append(pic);
+  } else fallback();
+  return box;
+}
+
+// ------------------------------------------------------------------ state from the event stream
+const state = {
+  lastId: -1, info: {}, busy: false, steps: [], progress: [], turnStart: null, turnEnd: null,
+  lastQuery: null, lastState: null, searches: [], shown: -1, sort: { key: "rank", dir: 1 },
+  filter: "", open: new Set(),
+};
+
+function apply(e) {
+  if (e.id <= state.lastId) return;
+  state.lastId = e.id;
+  switch (e.kind) {
+    case "info": state.info = e; renderInfo(); break;
+    case "chat":
+      addLine(e);
+      if (e.say && isLive(e)) sayLines(e.say);
+      break;
+    case "note":
+      addSaid(e);
+      if (e.say && isLive(e)) sayLines([e.text], { optional: e.line !== "search", fixed: true });
+      break;
+    case "status": state.busy = true; renderBusy(e.text); break;
+    case "turn":
+      if (e.phase === "start") {
+        state.busy = true; state.steps = []; state.progress = []; state.turnStart = e.t; state.turnEnd = null;
+        state.lastState = null;
+      } else {
+        state.busy = false; state.turnEnd = e.t; state.lastState = e.state;
+        if (e.query) state.lastQuery = e.query;
+      }
+      renderBusy(); renderActivity(); break;
+    case "task": {
+      let s = state.steps.find((x) => x.step === e.step && x.end === null);
+      if (e.phase === "start") state.steps.push({ step: e.step, start: e.t, end: null });
+      else if (s) s.end = e.t;
+      else state.steps.push({ step: e.step, start: e.t, end: e.t });
+      renderActivity(); break;
+    }
+    case "progress": state.progress.push(e); renderActivity(); break;
+    case "results": state.searches.push(e); state.shown = state.searches.length - 1; state.open.clear(); renderResults(true); break;
+    case "error": state.busy = false; addLine({ role: "error", text: e.text }); renderBusy(); renderActivity(); break;
+  }
+}
+
+// ------------------------------------------------------------------ header and conversation
+function renderInfo() {
+  const i = state.info;
+  $("run-listings").textContent = i.listings || "—";
+  $("run-model").textContent = i.model || "—";
+  const voice = i.input === "voice";
+  $("say").classList.toggle("hidden", voice);
+  $("voice-note").classList.toggle("hidden", !voice);
+  const canTalk = Boolean(!voice && i.mic && navigator.mediaDevices && window.MediaRecorder);
+  $("mic").classList.toggle("hidden", !canTalk);
+  $("aloud").classList.toggle("hidden", !canTalk);
+  renderAloud();
+}
+function scrollDown() { const l = $("lines"); l.scrollTop = l.scrollHeight; }
+function addLine(e) {
+  const typing = $("lines").querySelector(".typing");
+  if (typing) typing.remove();
+  const via = e.role === "user" && e.via === "voice" ? h("span", { class: "via" }, "spoken") : null;
+  $("lines").append(h("div", { class: `msg ${e.role}` }, e.text, via));
+  if (state.busy && e.role === "user") $("lines").append(h("div", { class: "typing", "aria-label": "Working" }, h("i"), h("i"), h("i")));
+  scrollDown();
+}
+function addSaid(e) {
+  const typing = $("lines").querySelector(".typing");
+  const line = h("div", { class: "said", title: "Said while the agents worked" }, e.text);
+  typing ? typing.before(line) : $("lines").append(line);
+  scrollDown();
+}
+function renderBusy(status) {
+  let typing = $("lines").querySelector(".typing");
+  if (typing && (status || typing.classList.contains("status"))) { typing.remove(); typing = null; }
+  if (state.busy && !typing) {
+    $("lines").append(status
+      ? h("div", { class: "typing status" }, h("i"), h("i"), h("i"), status)
+      : h("div", { class: "typing", "aria-label": "Working" }, h("i"), h("i"), h("i")));
+  }
+  if (!state.busy && typing) typing.remove();
+  $("send").disabled = state.busy;
+  $("mic").disabled = state.busy && !mic.rec;
+  $("send").textContent = state.busy ? "Working" : "Send";
+  const quick = $("quick");
+  quick.replaceChildren();
+  const confirm = !state.busy && state.lastState === "CONFIRM" && state.info.input !== "voice";
+  quick.classList.toggle("hidden", !confirm);
+  if (confirm) {
+    quick.append(
+      h("button", { type: "button", onclick: () => send("yes") }, "Yes, search"),
+      h("button", { type: "button", onclick: () => { $("text").placeholder = "Say what to change"; $("text").focus(); } }, "Change something"),
+    );
+  }
+  scrollDown();
+}
+async function send(text) {
+  text = (text || "").trim();
+  if (!text || state.busy) return;
+  state.busy = true; renderBusy();
+  try {
+    const r = await fetch("/api/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      state.busy = false; renderBusy();
+      addLine({ role: "error", text: `Not sent: ${body.detail || body.error || r.status}` });
+    }
+  } catch (err) {
+    state.busy = false; renderBusy();
+    addLine({ role: "error", text: "Not sent: the system isn't running. Start it again with python -m src --ui." });
+  }
+}
+$("say").addEventListener("submit", (ev) => { ev.preventDefault(); const t = $("text"); send(t.value); t.value = ""; t.placeholder = "Ask for a card"; grow(); });
+function grow() {
+  const t = $("text");
+  t.style.height = "46px";
+  t.style.height = `${Math.min(140, t.scrollHeight + 2)}px`;
+  t.style.overflowY = t.scrollHeight > 140 ? "auto" : "hidden";
+}
+$("text").addEventListener("input", grow);
+$("text").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); $("say").requestSubmit(); } });
+
+// ------------------------------------------------------------------ reading aloud
+// Replies to spoken messages (and the lines said during their search) are read in the voice
+// chat's voice: /api/speech makes each sentence with Edge-TTS; the next one is fetched while
+// the one before plays. If that fails, the browser's own voice reads it.
+const loadedAt = Date.now() / 1000;
+const isLive = (e) => e.t >= loadedAt - 1; // events replayed on page load are not read again
+const talk = { queue: [], busy: false, audio: null, gen: 0, on: true };
+try { talk.on = localStorage.getItem("agentic.aloud") !== "off"; } catch (err) { /* storage blocked */ }
+function renderAloud() {
+  $("aloud").setAttribute("aria-pressed", talk.on ? "true" : "false");
+  $("aloud").textContent = `Read aloud: ${talk.on ? "on" : "off"}`;
+  $("speaking").classList.toggle("hidden", !talk.busy);
+}
+$("aloud").addEventListener("click", () => {
+  talk.on = !talk.on;
+  try { localStorage.setItem("agentic.aloud", talk.on ? "on" : "off"); } catch (err) { /* storage blocked */ }
+  if (!talk.on) hush();
+  renderAloud();
+});
+function speechUrl(text, fixed) {
+  return fetch(`/api/speech?${fixed ? "fixed=1&" : ""}text=${encodeURIComponent(text)}`)
+    .then((r) => (r.ok ? r.blob() : null)).then((b) => (b ? URL.createObjectURL(b) : null)).catch(() => null);
+}
+function sayLines(parts, opts = {}) {
+  if (!talk.on || !parts || !parts.length) return;
+  if (opts.optional && (talk.busy || talk.queue.length)) return; // like the voice chat: skip, don't queue
+  for (const text of parts) talk.queue.push({ text, url: speechUrl(text, opts.fixed) });
+  if (!talk.busy) playNext(talk.gen);
+}
+async function playNext(gen) {
+  if (gen !== talk.gen) return;
+  const item = talk.queue.shift();
+  talk.busy = Boolean(item); renderAloud();
+  if (!item) return;
+  const url = await item.url;
+  if (gen !== talk.gen) return;
+  const next = () => playNext(gen);
+  if (url) {
+    const a = new Audio(url);
+    talk.audio = a;
+    a.onended = a.onerror = () => { URL.revokeObjectURL(url); next(); };
+    a.play().catch(next);
+  } else if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(item.text);
+    u.onend = u.onerror = next;
+    speechSynthesis.speak(u);
+  } else next();
+}
+function hush() {
+  talk.gen += 1; talk.queue = []; talk.busy = false;
+  if (talk.audio) { talk.audio.pause(); talk.audio = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  renderAloud();
+}
+$("hush").addEventListener("click", hush);
+
+// ------------------------------------------------------------------ the microphone
+// Click to talk, click again to send (Esc cancels). The recording goes to /api/voice, where
+// Whisper transcribes it; the page shows how loud it hears you while you talk.
+const mic = { rec: null, stream: null, chunks: [], started: 0, peak: 0, ctx: null, raf: 0, send: true, tick: 0 };
+const MIC_TYPES = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+async function startMic() {
+  hush();
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  } catch (err) {
+    addLine({ role: "error", text: "The browser didn't allow the microphone. Allow it for this page (the icon at the left of the address bar), or open this address in Chrome or Safari." });
+    return;
+  }
+  const type = MIC_TYPES.find((t) => MediaRecorder.isTypeSupported(t));
+  const rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+  Object.assign(mic, { rec, stream, chunks: [], started: performance.now(), peak: 0, send: true });
+  rec.ondataavailable = (ev) => { if (ev.data.size) mic.chunks.push(ev.data); };
+  rec.onstop = finishMic;
+  rec.start();
+  try {
+    mic.ctx = new AudioContext();
+    const an = mic.ctx.createAnalyser();
+    an.fftSize = 1024;
+    mic.ctx.createMediaStreamSource(stream).connect(an);
+    const buf = new Float32Array(an.fftSize);
+    const loop = () => {
+      an.getFloatTimeDomainData(buf);
+      let level = 0;
+      for (const v of buf) level = Math.max(level, Math.abs(v));
+      mic.peak = Math.max(mic.peak, level);
+      $("mic").style.setProperty("--level", Math.min(1, level * 2.5).toFixed(2));
+      mic.raf = requestAnimationFrame(loop);
+    };
+    loop();
+  } catch (err) { mic.peak = 1; /* no level meter: let the server judge */ }
+  const t = $("text");
+  t.disabled = true;
+  const show = () => { const s = Math.floor((performance.now() - mic.started) / 1000); t.placeholder = `Listening ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}, click the mic to send`; };
+  show();
+  mic.tick = setInterval(show, 500);
+  $("mic").classList.add("on");
+  $("mic").setAttribute("aria-pressed", "true");
+}
+function stopMic(send) {
+  if (!mic.rec) return;
+  mic.send = send;
+  mic.rec.stop();
+  mic.stream.getTracks().forEach((tr) => tr.stop());
+  cancelAnimationFrame(mic.raf);
+  clearInterval(mic.tick);
+  if (mic.ctx) mic.ctx.close().catch(() => {});
+  const t = $("text");
+  t.disabled = false;
+  t.placeholder = "Ask for a card";
+  $("mic").classList.remove("on");
+  $("mic").setAttribute("aria-pressed", "false");
+  $("mic").style.setProperty("--level", "0");
+}
+async function finishMic() {
+  const rec = mic.rec;
+  mic.rec = null;
+  if (!mic.send) return;
+  const seconds = (performance.now() - mic.started) / 1000;
+  const limits = state.info.mic || { min_seconds: 0.4, silence_peak: 0.001 };
+  if (seconds < limits.min_seconds) {
+    addLine({ role: "error", text: "That was too short: click the mic, talk, then click it again." });
+    return;
+  }
+  if (mic.peak < limits.silence_peak) {
+    addLine({ role: "error", text: "The microphone sent silence. Check that this browser may use it (System Settings → Privacy & Security → Microphone)." });
+    return;
+  }
+  const blob = new Blob(mic.chunks, { type: rec.mimeType || "audio/webm" });
+  state.busy = true; renderBusy("Sending your voice…");
+  try {
+    const r = await fetch("/api/voice", { method: "POST", headers: { "Content-Type": blob.type, "X-Seconds": seconds.toFixed(2) }, body: blob });
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      state.busy = false; renderBusy();
+      addLine({ role: "error", text: `Not sent: ${body.detail || body.error || r.status}` });
+    }
+  } catch (err) {
+    state.busy = false; renderBusy();
+    addLine({ role: "error", text: "Not sent: the system isn't running. Start it again with python -m src --ui." });
+  }
+}
+$("mic").addEventListener("click", () => (mic.rec ? stopMic(true) : startMic()));
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && mic.rec) stopMic(false); });
+
+// ------------------------------------------------------------------ what the agents are doing
+function secs(a, b) { return `${Math.max(0, b - a).toFixed(1)} s`; }
+function progressLine(p) {
+  if (p.step === "searching") return h("li", {}, "Searching Facebook Marketplace for ", h("b", {}, `“${p.term}”`));
+  if (p.step === "scraped") return h("li", {}, "Got ", h("b", {}, `${p.count} listings`), `, ${p.usable} of them real ones`);
+  if (p.step === "identified") return h("li", {}, "Identified ", h("b", {}, `${p.kept} single cards`), " that match");
+  return h("li", {}, p.step);
+}
+function requestChips(q) {
+  if (!q) return null;
+  const chips = [["Card", q.card_name], ["Set", q.any_printing ? "any printing" : q.set_name],
+    ["Budget", q.budget ? money(q.budget) : null], ["Lowest condition", q.min_condition ? CONDITIONS[q.min_condition] : null],
+    ["Version", q.variant && q.variant !== "unknown" ? q.variant : null], ["Buyer", PERSONA[q.persona]],
+    ["Price check", q.is_consultative ? (q.asked_price ? `is ${money(q.asked_price)} fair?` : "yes") : null]];
+  return h("div", { class: "request" }, chips.filter(([, v]) => v).map(([k, v]) => h("span", { class: "chip" }, h("span", {}, k), v)));
+}
+function renderActivity() {
+  const box = $("activity");
+  if (!state.turnStart) { box.replaceChildren(h("p", { class: "idle" }, "Waiting for the first message.")); return; }
+  const now = Date.now() / 1000;
+  const steps = h("ol", { class: "steps" }, state.steps.map((s) => {
+    const running = s.end === null && state.busy;
+    return h("li", {}, h("span", { class: `step ${running ? "running" : "done"}` }, STEP[s.step] || s.step,
+      h("span", { class: "t", "data-start": running ? s.start : null }, secs(s.start, s.end ?? now))));
+  }));
+  const kids = [];
+  if (state.steps.length) kids.push(steps);
+  else if (state.busy) kids.push(h("p", { class: "idle" }, "Working on it…"));
+  if (state.progress.length) kids.push(h("ul", { class: "sub" }, state.progress.map(progressLine)));
+  if (!state.busy && state.turnEnd) {
+    const what = { CONFIRM: "Waiting for a yes or a correction.", CLARIFY: "Waiting for the answer to the question.", SMALLTALK: "Small talk, nothing to search yet." }[state.lastState];
+    kids.push(h("p", { class: "turn-total" }, `Last turn took ${secs(state.turnStart, state.turnEnd)}.`, what ? ` ${what}` : ""));
+  }
+  if (state.lastQuery && state.lastState !== "SMALLTALK") kids.push(requestChips(state.lastQuery));
+  box.replaceChildren(...kids);
+}
+setInterval(() => {
+  if (!state.busy) return;
+  const now = Date.now() / 1000;
+  document.querySelectorAll(".step .t[data-start]").forEach((el) => { el.textContent = secs(Number(el.dataset.start), now); });
+}, 100);
+
+// ------------------------------------------------------------------ results
+// the same bands as the spoken reasons (notebook 01): under 90% of market is a deal
+function dealText(m) {
+  if (!m || !m.ratio) return null;
+  const pct = Math.round(Math.abs(1 - m.ratio) * 100);
+  if (m.ratio <= 0.9) return h("span", { class: "deal-good" }, `${pct}% under market`);
+  if (m.ratio >= 1.1) return h("span", { class: "deal-high" }, `${pct}% over market`);
+  if (pct === 0) return h("span", {}, "at the market price");
+  return h("span", {}, `about market (${pct}% ${m.ratio < 1 ? "under" : "over"})`);
+}
+function dealShort(m) {
+  if (!m || !m.ratio) return "—";
+  const pct = Math.round((1 - m.ratio) * 100);
+  const text = pct === 0 ? "at market" : `${Math.abs(pct)}% ${pct > 0 ? "under" : "over"}`;
+  return h("span", { class: m.ratio <= 0.9 ? "deal-good" : m.ratio >= 1.1 ? "deal-high" : "", title: "Total against the market value for its condition" }, text);
+}
+const condWords = (c) => (c === "unknown" ? "unstated condition" : CONDITIONS[c].toLowerCase());
+function marketFact(r) {
+  const m = r.market;
+  if (!m.price) return h("div", { class: "fact" }, h("h4", {}, "Market value"), h("p", {}, "No market price found for this card."));
+  return h("div", { class: "fact" },
+    h("h4", {}, "Market value"),
+    h("p", { class: "big" }, h("span", { class: "num" }, money(m.for_condition)), ` for ${condWords(r.card.condition)}`),
+    h("p", { class: "muted" }, h("span", { class: "num" }, money(m.price)), " near mint", m.variant ? ` (${m.variant})` : ""),
+    h("p", {}, m.source),
+    m.updated ? h("p", { class: "muted" }, `Updated ${shortDate(m.updated)}`) : null,
+    m.url ? h("p", {}, outLink(m.url, "See it on TCGplayer")) : null);
+}
+function sellerFact(r) {
+  const s = r.seller;
+  const where = [s.city, s.distance_miles !== null && s.distance_miles !== undefined ? `${Math.round(s.distance_miles)} miles away` : null].filter(Boolean).join(", ");
+  const listed = s.listed_at ? `Listed ${ago(s.days_listed)} (${shortDate(s.listed_at)})` : "Listing date not known";
+  return h("div", { class: "fact" },
+    h("h4", {}, "Seller"),
+    h("p", { class: "big" }, where || "Location not stated"),
+    h("p", {}, listed),
+    h("p", {}, DELIVERY[s.delivery] || s.delivery, s.public_meetup ? ", offers a public meetup" : ""),
+    h("p", { class: "muted" }, s.photos === null || s.photos === undefined ? "" : `${s.photos} photo${s.photos === 1 ? "" : "s"}`, s.pending ? ", marked pending" : ""),
+    h("p", { class: "muted" }, r.url ? "Seller's name: open the listing" : "Seller's name isn't in the scraped data"));
+}
+function priceFact(r) {
+  return h("div", { class: "fact" },
+    h("h4", {}, "Price"),
+    h("p", { class: "big" }, h("span", { class: "num" }, money(r.total)), " total"),
+    h("p", { class: "muted" }, h("span", { class: "num" }, money(r.price)), " asked",
+      r.shipping ? `, ${money(r.shipping)} shipping${r.shipping_estimated ? " (estimated)" : ""}` : "",
+      r.tax ? `, ${money(r.tax)} tax` : ""),
+    h("p", {}, dealText(r.market)));
+}
+function scoreParts(r) {
+  const parts = Object.entries(r.score_parts || {});
+  if (!parts.length) return null;
+  return h("div", { class: "fact" }, h("h4", {}, "How the score adds up"),
+    h("div", { class: "parts" }, parts.map(([k, v]) => [
+      h("span", {}, PART[k] || k),
+      h("span", { class: "track", role: "img", "aria-label": `${Math.round(v * 100)} of 100` }, h("i", { style: `width:${Math.round(v * 100)}%` })),
+      h("span", { class: "w num" }, r.weights && r.weights[k] !== undefined ? `× ${r.weights[k]}` : ""),
+    ])));
+}
+function cardBadges(r) {
+  const c = r.card;
+  return h("div", { class: "badges" },
+    h("span", { class: "badge cond", title: CONDITIONS[c.condition] }, c.condition === "unknown" ? "Condition ?" : c.condition),
+    h("span", { class: "badge rare" }, c.rarity ? `${raritySymbol(c.rarity)} ${c.rarity}` : "Rarity not known"),
+    c.variant && c.variant !== "unknown" ? h("span", { class: "badge" }, c.variant) : null,
+    h("span", { class: "badge" }, `${c.set || c.set_code}${c.number !== "unknown" ? ` #${c.number}` : ""}`),
+    c.confidence < 0.7 ? h("span", { class: "badge", title: "How sure the system is about which card this is" }, `${Math.round(c.confidence * 100)}% sure of the card`) : null);
+}
+function whyList(r) {
+  return r.reasons && r.reasons.length ? h("ul", { class: "why" }, r.reasons.map((x) => h("li", {}, x))) : null;
+}
+function warning(r) {
+  const risks = r.warning || (r.risk_reasons && r.risk_reasons.length ? r.risk_reasons.join("; ") : null);
+  return risks ? h("div", { class: "warn" }, `Heads up: ${risks}`) : null;
+}
+function showcase(r) {
+  const sleeve = h("div", { class: "sleeve" }, art(r.card, "high"),
+    h("div", { class: "sticker" }, h("span", { class: "num" }, money(r.total)), h("small", {}, "total")));
+  const frame = sleeve.querySelector(".art");
+  frame.append(h("div", { class: "shine" }));
+  sleeve.addEventListener("pointermove", (ev) => {
+    const b = frame.getBoundingClientRect();
+    frame.style.setProperty("--sx", `${((ev.clientX - b.left) / b.width) * 100}%`);
+    frame.style.setProperty("--sy", `${((ev.clientY - b.top) / b.height) * 100}%`);
+  });
+  return h("div", { class: "showcase fresh" }, sleeve,
+    h("div", {},
+      h("div", { class: "pick-head" },
+        h("h3", {}, r.card.name),
+        h("span", { class: "muted" }, "Top pick"),
+        r.score !== null ? h("div", { class: "score" }, h("span", { class: "num" }, r.score), h("small", {}, "score of 100")) : null),
+      h("p", { class: "pick-title" }, r.title),
+      cardBadges(r),
+      h("div", { class: "facts" }, priceFact(r), marketFact(r), sellerFact(r)),
+      whyList(r), warning(r),
+      h("div", { class: "links" }, outLink(r.url, "Open the listing on Facebook"))));
+}
+function altCard(r) {
+  return h("button", { class: "alt", type: "button", onclick: () => openRow(r.id) },
+    art(r.card, "low"),
+    h("div", {},
+      h("h4", {}, `#${r.rank} ${r.card.name}`),
+      h("p", {}, h("span", { class: "price num" }, money(r.total)), ` total, ${condWords(r.card.condition)}`),
+      h("p", {}, dealText(r.market) || "no market price", r.seller.city ? `, ${r.seller.city}` : ""),
+      h("p", {}, r.reasons && r.reasons[0] ? r.reasons[0] : "")));
+}
+function openRow(id) {
+  state.open.add(id);
+  renderTable();
+  const row = document.querySelector(`tr.row[data-id="${CSS.escape(id)}"]`);
+  if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+const COLUMNS = [
+  { key: "rank", label: "#", cls: "r", get: (r) => r.rank },
+  { key: "card", label: "Card", get: (r) => r.card.name },
+  { key: "condition", label: "Condition", get: (r) => COND_ORDER[r.card.condition] },
+  { key: "rarity", label: "Rarity", get: (r) => r.card.rarity || "" },
+  { key: "total", label: "Total", cls: "r", get: (r) => r.total },
+  { key: "market", label: "Market value", cls: "r", get: (r) => r.market.for_condition ?? Infinity },
+  { key: "ratio", label: "Vs market", cls: "r", get: (r) => r.market.ratio ?? Infinity },
+  { key: "city", label: "Seller in", get: (r) => r.seller.city || "" },
+  { key: "distance", label: "Distance", cls: "r", get: (r) => r.seller.distance_miles ?? Infinity },
+  { key: "listed", label: "Listed", get: (r) => r.seller.days_listed ?? Infinity },
+  { key: "score", label: "Score", cls: "r", get: (r) => r.score ?? -1 },
+];
+function cell(col, r) {
+  switch (col.key) {
+    case "rank": return h("td", { class: "r num" }, r.rank ?? "—");
+    case "card": return h("td", { class: "card-cell" }, art(r.card, "low", "thumb"),
+      h("span", {}, h("b", {}, r.card.name), h("small", {}, `${r.card.set || r.card.set_code}${r.card.number !== "unknown" ? ` #${r.card.number}` : ""}`)));
+    case "condition": return h("td", { title: CONDITIONS[r.card.condition] }, r.card.condition === "unknown" ? "?" : r.card.condition);
+    case "rarity": return h("td", {}, r.card.rarity ? `${raritySymbol(r.card.rarity)} ${r.card.rarity}` : "—");
+    case "total": return h("td", { class: "r num", title: `${money(r.price)} asked` }, money(r.total));
+    case "market": return h("td", { class: "r num" }, money(r.market.for_condition));
+    case "ratio": return h("td", { class: "r" }, dealShort(r.market));
+    case "city": return h("td", {}, r.seller.city || "—");
+    case "distance": return h("td", { class: "r num" }, r.seller.distance_miles !== null && r.seller.distance_miles !== undefined ? `${Math.round(r.seller.distance_miles)} mi` : "—");
+    case "listed": return h("td", {}, r.seller.listed_at ? ago(r.seller.days_listed) : "—");
+    case "score": return h("td", { class: "r num" }, r.score ?? "—");
+  }
+}
+function detailRow(r) {
+  return h("tr", { class: "detail" }, h("td", { colspan: COLUMNS.length },
+    h("p", {}, h("b", {}, r.title)),
+    r.description ? h("p", { class: "desc" }, r.description.length > 700 ? `${r.description.slice(0, 700)}…` : r.description) : null,
+    h("div", { style: "height:14px" }),
+    cardBadges(r),
+    h("div", { class: "detail-grid" }, priceFact(r), marketFact(r), sellerFact(r), scoreParts(r)),
+    r.rejection_reason ? h("div", { class: "warn" }, `Left out: ${r.rejection_reason}`) : null,
+    whyList(r), warning(r),
+    h("div", { class: "links" }, outLink(r.url, "Open the listing on Facebook"))));
+}
+function sortedRows(rows) {
+  const col = COLUMNS.find((c) => c.key === state.sort.key) || COLUMNS[0];
+  const f = state.filter.toLowerCase();
+  return rows
+    .filter((r) => !f || `${r.title} ${r.card.name} ${r.seller.city || ""} ${r.card.set || ""}`.toLowerCase().includes(f))
+    .slice()
+    .sort((a, b) => {
+      const x = col.get(a), y = col.get(b);
+      return (typeof x === "string" ? x.localeCompare(y) : x - y) * state.sort.dir;
+    });
+}
+function tableFor(rows, withSort) {
+  const head = h("tr", {}, COLUMNS.map((c) => {
+    const sorted = withSort && state.sort.key === c.key;
+    return h("th", { class: c.cls, scope: "col", "aria-sort": sorted ? (state.sort.dir > 0 ? "ascending" : "descending") : null },
+      withSort ? h("button", { type: "button", onclick: () => {
+        state.sort = { key: c.key, dir: state.sort.key === c.key ? -state.sort.dir : (c.key === "score" ? -1 : 1) };
+        renderTable();
+      } }, c.label) : c.label);
+  }));
+  const body = h("tbody", {});
+  for (const r of withSort ? sortedRows(rows) : rows) {
+    const open = state.open.has(r.id);
+    body.append(h("tr", {
+      class: `row${open ? " open" : ""}${r.spoken ? " spoken" : ""}`, "data-id": r.id, tabindex: 0, "aria-expanded": open ? "true" : "false",
+      onclick: () => { open ? state.open.delete(r.id) : state.open.add(r.id); renderTable(); },
+      onkeydown: (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.currentTarget.click(); } },
+    }, COLUMNS.map((c) => cell(c, r))));
+    if (open) body.append(detailRow(r));
+  }
+  return h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, head), body));
+}
+function renderTable() {
+  const s = state.searches[state.shown];
+  const slot = $("table-slot");
+  if (!s || !slot) return;
+  slot.replaceChildren(tableFor(s.listings, true));
+  const cut = $("cut-slot");
+  if (cut) cut.replaceChildren(s.rejected.length ? tableFor(s.rejected, false) : "");
+}
+function funnelView(fun) {
+  const steps = fun.steps.filter((s) => s.count !== null && s.count !== undefined);
+  const max = Math.max(1, ...steps.map((s) => s.count));
+  const grid = h("div", { class: "funnel" }, steps.map((s, i) => [
+    h("div", { class: "label" }, s.label, s.note ? h("small", {}, s.note) : null),
+    h("div", { class: `bar-track${i === steps.length - 1 ? " last" : ""}` },
+      h("span", { class: "bar-fill", style: `width:${(s.count / max) * 100}%` }), h("span", { class: "num" }, s.count)),
+  ]));
+  const dropped = fun.dropped.length ? h("ul", { class: "dropped", "aria-label": "Left out before scoring" },
+    h("li", {}, "Left out:"), fun.dropped.map((d) => h("li", {}, h("b", {}, d.count), d.reason))) : null;
+  const live = fun.live || {};
+  const scraping = live.scrape_s >= 0.1 ? `, ${live.scrape_s} s of it scraping` : " (a saved scrape, so no scraping time)";
+  const time = live.seconds ? h("p", { class: "muted", style: "margin:10px 0 0;font-size:14px" },
+    `The search took ${live.seconds} s${scraping}.`) : null;
+  return h("div", {}, grid, dropped, time);
+}
+function priceCheck(pc) {
+  if (!pc.found) return h("p", { class: "empty" }, `No market price found for ${pc.card || "that card"}.`);
+  return h("div", { class: "check fresh" },
+    h("p", { class: "muted", style: "margin:0" }, `${pc.card}${pc.set ? `, ${pc.set}` : ""}, ${condWords(pc.condition)}${pc.condition_assumed ? " (assumed)" : ""}`),
+    h("p", { style: "margin:6px 0" }, h("span", { class: "num big" }, money(pc.market_for_condition)), " market value"),
+    h("p", { class: "muted", style: "margin:0" }, `${money(pc.market_price)} near mint. `, pc.sample_prices ? "Sample price, not a real market price." : "TCGplayer market price, via TCGdex."),
+    pc.asked_price ? h("p", { style: "margin:10px 0 0" }, `${money(pc.asked_price)} is `, h("b", {}, pc.verdict), ".") : null);
+}
+function renderResults(fresh) {
+  const box = $("results");
+  const s = state.searches[state.shown];
+  if (!s) return;
+  const kids = [];
+  if (state.searches.length > 1) {
+    kids.push(h("div", { class: "tabs", role: "tablist" }, state.searches.map((x, i) =>
+      h("button", { type: "button", role: "tab", "aria-selected": i === state.shown ? "true" : "false",
+        onclick: () => { state.shown = i; state.open.clear(); renderResults(false); } },
+      `${i + 1}. ${x.query && x.query.card_name ? x.query.card_name : "search"}`))));
+  }
+  const q = s.query;
+  kids.push(h("h3", { class: "results-head" }, q ? `Looking for ${q.text}` : "Results"));
+  kids.push(h("p", { class: "results-sub" },
+    s.ranked_total ? `${s.ranked_total} listing${s.ranked_total === 1 ? "" : "s"} passed the budget and safety rules` : "Nothing passed the budget and safety rules",
+    s.rejected_total ? `, ${s.rejected_total} didn't.` : ".",
+    s.data_source === "samples" ? " These are sample listings with made-up prices." : ""));
+  if (s.price_check) kids.push(priceCheck(s.price_check));
+  if (!s.price_check || s.listings.length) {
+    kids.push(h("section", {}, h("h2", {}, "How the search narrowed down"), funnelView(s.funnel)));
+  }
+  if (s.listings.length) {
+    const [top, ...rest] = s.listings;
+    const said = rest.filter((r) => r.spoken);
+    kids.push(h("section", {}, showcase(top), said.length ? h("div", { class: "alts" }, said.map(altCard)) : null));
+    const tools = h("div", { class: "table-tools" },
+      h("input", { type: "search", placeholder: "Filter by title, card or city", "aria-label": "Filter listings", value: state.filter,
+        oninput: (ev) => { state.filter = ev.target.value; renderTable(); } }),
+      h("span", { class: "muted", style: "font-size:14px" }, "Click a row for the details. The yellow edge marks the listings the assistant talked about."));
+    kids.push(h("section", {}, h("h2", {}, `All ${s.listings.length} ranked listings`), tools, h("div", { id: "table-slot" })));
+  } else if (!s.price_check) {
+    kids.push(h("p", { class: "empty" }, "Nothing fit. The listings below were close but broke a rule; try a higher budget or a lower condition."));
+  }
+  if (s.rejected.length) {
+    kids.push(h("details", { class: "cut", open: !s.listings.length && !s.price_check },
+      h("summary", {}, `${s.rejected_total} listing${s.rejected_total === 1 ? "" : "s"} didn't make the cut`), h("div", { id: "cut-slot" })));
+  }
+  box.replaceChildren(...kids);
+  if (fresh) box.querySelectorAll("section").forEach((el) => el.classList.add("fresh"));
+  renderTable();
+}
+
+// ------------------------------------------------------------------ connect
+function connect() {
+  const link = $("link");
+  const es = new EventSource("/api/events");
+  es.onopen = () => { link.textContent = "Connected"; link.className = "link-state on"; };
+  es.onerror = () => { link.textContent = "Reconnecting"; link.className = "link-state off"; };
+  es.onmessage = (m) => { try { apply(JSON.parse(m.data)); } catch (err) { console.error(err); } };
+}
+connect();
+</script>
+</body>
+</html>
